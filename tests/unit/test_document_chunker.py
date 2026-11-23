@@ -187,6 +187,34 @@ def test_metadata_with_empty_document_metadata(chunker):
     assert chunks[0].metadata["source_path"] == "minimal.txt"
 
 
+def test_legal_chunking_preserves_front_matter_and_structure(chunker):
+    doc = Document(
+        id="labor_law",
+        text=(
+            "---\n"
+            "title: 劳动合同法\n"
+            "doc_no: 主席令第六十五号\n"
+            "region: 全国\n"
+            "---\n"
+            "第一章 总则\n"
+            "第一条 为了完善劳动合同制度，明确双方权利义务。\n"
+            "第二条 本法适用于境内企业与劳动者。\n"
+        ),
+        metadata={"source_path": "laws/labor.md", "title": "Original document title"},
+    )
+
+    chunks = chunker.split_document(doc)
+
+    article_chunk = next(chunk for chunk in chunks if "第一条" in chunk.text)
+    assert article_chunk.metadata["title"] == "劳动合同法"
+    assert article_chunk.metadata["doc_no"] == "主席令第六十五号"
+    assert article_chunk.metadata["region"] == "全国"
+    assert article_chunk.metadata["chapter"] == "第一章 总则"
+    assert article_chunk.metadata["article_no"] == "第一条、第二条"
+    assert article_chunk.metadata["context_header"] == "《劳动合同法》 第一章 总则 第一条、第二条"
+    assert article_chunk.text.startswith("第一条")
+
+
 # =============================================================================
 # Test 3: chunk_index - Sequential Position Tracking
 # =============================================================================

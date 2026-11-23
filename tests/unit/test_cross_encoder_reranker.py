@@ -1,5 +1,6 @@
 """Tests for Cross-Encoder based Reranker implementation."""
 
+from threading import Event
 from typing import Any, Dict, List
 from unittest.mock import Mock, patch
 
@@ -7,8 +8,8 @@ import pytest
 
 from src.core.settings import RerankSettings, Settings
 from src.libs.reranker.cross_encoder_reranker import (
-    CrossEncoderRerankError,
     CrossEncoderReranker,
+    CrossEncoderRerankError,
 )
 
 
@@ -267,6 +268,30 @@ class TestCrossEncoderRerankerScoring:
         
         assert mock_model.call_count == 1
         assert mock_model.last_pairs == pairs
+
+    def test_score_pairs_timeout_can_retry_pending_prediction(self, mock_settings):
+        started = Event()
+        release = Event()
+
+        class SlowModel:
+            def predict(self, pairs):
+                started.set()
+                release.wait(timeout=1)
+                return [0.8] * len(pairs)
+
+        reranker = CrossEncoderReranker(
+            settings=mock_settings,
+            model=SlowModel(),
+            timeout=0.01,
+        )
+        pairs = [("query", "passage")]
+
+        with pytest.raises(CrossEncoderRerankError, match="timed out"):
+            reranker._score_pairs(pairs)
+        assert started.wait(timeout=1)
+        release.set()
+
+        assert reranker._score_pairs(pairs) == [0.8]
 
 
 class TestCrossEncoderRerankerSorting:

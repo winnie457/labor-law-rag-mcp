@@ -109,9 +109,12 @@ def _format_filters(filters: Dict[str, Any]) -> str:
     return ", ".join(f"{k}={v}" for k, v in filters.items())
 
 
-def _print_results(results: List[Any], top_k: int, title: str = "RESULTS") -> None:
+def _print_results(results: List[Any], title: str = "RESULTS", top_k: Optional[int] = None) -> None:
     print("\n" + "=" * 60)
-    print(f"{title} (top_k={top_k}, returned={len(results)})")
+    if top_k is not None:
+        print(f"{title} (top_k={top_k}, returned={len(results)})")
+    else:
+        print(f"{title} (returned={len(results)})")
     print("=" * 60)
 
     for idx, result in enumerate(results, start=1):
@@ -205,9 +208,17 @@ def _run_query(
                 f"[INFO] ProcessedQuery keywords={hybrid_result.processed_query.keywords} "
                 f"filters={_format_filters(hybrid_result.processed_query.filters)}"
             )
-        _print_results(hybrid_result.dense_results or [], top_k=top_k, title="DENSE RESULTS")
-        _print_results(hybrid_result.sparse_results or [], top_k=top_k, title="SPARSE RESULTS")
-        _print_results(hybrid_result.results, top_k=top_k, title="FUSION RESULTS")
+        _print_results(
+            hybrid_result.dense_results or [],
+            title="DENSE RESULTS",
+            top_k=hybrid_search.config.dense_top_k,
+        )
+        _print_results(
+            hybrid_result.sparse_results or [],
+            title="SPARSE RESULTS",
+            top_k=hybrid_search.config.sparse_top_k,
+        )
+        _print_results(hybrid_result.results, title="FUSION RESULTS", top_k=top_k)
     else:
         results = hybrid_result
 

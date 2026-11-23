@@ -823,6 +823,26 @@ class TestCreateHybridSearch:
 
 class TestRRFFusionIntegration:
     """Test actual RRF fusion behavior in HybridSearch."""
+
+    def test_dense_weight_is_applied_to_weighted_rrf(
+        self,
+        query_processor: QueryProcessor,
+        sample_dense_results: List[RetrievalResult],
+        sample_sparse_results: List[RetrievalResult],
+    ):
+        dense = MockDenseRetriever(results=sample_dense_results[:1])
+        sparse = MockSparseRetriever(results=sample_sparse_results[:1])
+        hybrid = HybridSearch(
+            query_processor=query_processor,
+            dense_retriever=dense,
+            sparse_retriever=sparse,
+            fusion=RRFFusion(k=5),
+            config=HybridSearchConfig(dense_weight=2.0, sparse_weight=1.0),
+        )
+
+        results = hybrid.search("Azure OpenAI configuration", top_k=2)
+
+        assert results[0].chunk_id == "dense_1"
     
     def test_common_chunks_boosted_by_rrf(
         self,

@@ -17,8 +17,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Pattern, Set
 
-import jieba
-
+from src.core.tokenization import tokenize_mixed
 from src.core.types import ProcessedQuery
 
 
@@ -222,8 +221,9 @@ class QueryProcessor:
         """
         tokens: List[str] = []
 
-        # Use jieba to segment (handles Chinese + keeps English intact)
-        raw_tokens = jieba.lcut(text)
+        # Use the shared tokenizer (handles Chinese + preserves hyphenated
+        # English terms) so query terms match the BM25 index exactly.
+        raw_tokens = tokenize_mixed(text)
 
         for token in raw_tokens:
             token = token.strip()

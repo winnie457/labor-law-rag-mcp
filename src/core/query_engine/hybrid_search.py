@@ -73,6 +73,8 @@ class HybridSearchConfig:
     dense_top_k: int = 20
     sparse_top_k: int = 20
     fusion_top_k: int = 10
+    dense_weight: float = 2.0
+    sparse_weight: float = 1.0
     enable_dense: bool = True
     enable_sparse: bool = True
     parallel_retrieval: bool = True
@@ -194,6 +196,8 @@ class HybridSearch:
             dense_top_k=getattr(retrieval_config, 'dense_top_k', 20),
             sparse_top_k=getattr(retrieval_config, 'sparse_top_k', 20),
             fusion_top_k=getattr(retrieval_config, 'fusion_top_k', 10),
+            dense_weight=getattr(retrieval_config, 'dense_weight', 2.0),
+            sparse_weight=getattr(retrieval_config, 'sparse_weight', 1.0),
             enable_dense=True,
             enable_sparse=True,
             parallel_retrieval=True,
@@ -604,10 +608,13 @@ class HybridSearch:
         
         # Build ranking lists for RRF
         ranking_lists = []
+        weights = []
         if dense_results:
             ranking_lists.append(dense_results)
+            weights.append(self.config.dense_weight)
         if sparse_results:
             ranking_lists.append(sparse_results)
+            weights.append(self.config.sparse_weight)
         
         if not ranking_lists:
             return []
@@ -617,15 +624,17 @@ class HybridSearch:
             return ranking_lists[0][:top_k]
         
         _t0 = time.monotonic()
-        fused = self.fusion.fuse(
+        fused = self.fusion.fuse_with_weights(
             ranking_lists=ranking_lists,
+            weights=weights,
             top_k=top_k,
             trace=trace,
         )
         _elapsed = (time.monotonic() - _t0) * 1000.0
         if trace is not None:
             trace.record_stage("fusion", {
-                "method": "rrf",
+                "method": "weighted_rrf",
+                "weights": weights,
                 "input_lists": len(ranking_lists),
                 "top_k": top_k,
                 "result_count": len(fused),

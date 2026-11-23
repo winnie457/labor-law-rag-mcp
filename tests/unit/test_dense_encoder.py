@@ -102,6 +102,26 @@ def test_encode_single_chunk():
     assert embedding.call_history[0] == ["Hello world"]
 
 
+def test_encode_adds_context_header_without_changing_chunk_text():
+    embedding = FakeEmbedding(dimension=4)
+    encoder = DenseEncoder(embedding)
+    chunk = Chunk(
+        id="context",
+        text="Original article text",
+        metadata={
+            "source_path": "laws/labor.md",
+            "context_header": "Labor Contract Law Article 1",
+        },
+    )
+
+    encoder.encode([chunk])
+
+    assert embedding.call_history[0] == [
+        "Labor Contract Law Article 1\nOriginal article text"
+    ]
+    assert chunk.text == "Original article text"
+
+
 def test_encode_multiple_chunks():
     """Test encoding multiple chunks in single batch."""
     embedding = FakeEmbedding(dimension=8)

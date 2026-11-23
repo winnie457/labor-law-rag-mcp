@@ -203,6 +203,9 @@ def _make_manager(
     # Default delete_by_metadata
     chroma.delete_by_metadata.return_value = len(chroma_get_ids or [])
 
+    # Default chunk-id lookup (used to clean BM25 postings)
+    chroma.get_ids_by_metadata.return_value = chroma_get_ids or []
+
     # Default bm25 remove
     bm25.remove_document.return_value = True
 
@@ -290,6 +293,9 @@ class TestDocumentManagerDelete:
         assert isinstance(result, DeleteResult)
         assert result.chunks_deleted == 2
         assert result.bm25_removed is True
+        # BM25 postings are removed chunk by chunk, not by doc hash
+        mgr.bm25.remove_document.assert_any_call("c0", "default")
+        mgr.bm25.remove_document.assert_any_call("c1", "default")
         assert result.images_deleted == 1
         assert result.integrity_removed is True
         assert result.success is True
@@ -299,7 +305,7 @@ class TestDocumentManagerDelete:
         test_file = tmp_path / "test.pdf"
         test_file.write_bytes(b"data")
 
-        mgr = _make_manager()
+        mgr = _make_manager(chroma_get_ids=["c0"])
         mgr.chroma.delete_by_metadata.side_effect = RuntimeError("chroma fail")
         result = mgr.delete_document(str(test_file), "default")
         assert result.success is False

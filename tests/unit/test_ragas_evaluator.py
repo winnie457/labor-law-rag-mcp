@@ -13,7 +13,7 @@ and deterministic.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
 from typing import Any, Dict
 
 import pytest
@@ -29,6 +29,7 @@ class TestRagasEvaluatorInit:
         assert set(evaluator._metric_names) == {
             "answer_relevancy",
             "context_precision",
+            "context_recall",
             "faithfulness",
         }
 
@@ -60,7 +61,7 @@ class TestRagasEvaluatorInit:
         from src.observability.evaluation.ragas_evaluator import RagasEvaluator
 
         evaluator = RagasEvaluator(settings=None, metrics=None)
-        assert len(evaluator._metric_names) == 3
+        assert len(evaluator._metric_names) == 4
 
 
 class TestRagasImportCheck:
@@ -215,6 +216,61 @@ class TestRagasEvaluatorEvaluate:
         )
 
         assert "faithfulness" in result
+
+    def test_reference_answer_is_passed_to_ragas(self) -> None:
+        from src.observability.evaluation.ragas_evaluator import RagasEvaluator
+
+        evaluator = RagasEvaluator(metrics=["context_recall"])
+        evaluator._run_ragas = MagicMock(return_value={"context_recall": 0.8})  # type: ignore[method-assign]
+
+        evaluator.evaluate(
+            query="What is RAG?",
+            retrieved_chunks=["A retrieved context"],
+            generated_answer="An answer",
+            reference_answer="The reference answer",
+        )
+
+        evaluator._run_ragas.assert_called_once_with(
+            "What is RAG?",
+            ["A retrieved context"],
+            "An answer",
+            reference_answer="The reference answer",
+        )
+
+    def test_evaluate_batch_preserves_input_order(self) -> None:
+        import asyncio
+
+        from src.observability.evaluation.ragas_evaluator import RagasEvaluator
+
+        evaluator = RagasEvaluator(
+            metrics=["faithfulness", "context_precision", "context_recall"]
+        )
+        evaluator._build_wrappers = MagicMock(return_value=(object(), object()))  # type: ignore[method-assign]
+
+        async def score_sample(_llm, _embeddings, query, *_args):
+            await asyncio.sleep(0.01 if query == "first" else 0)
+            return {query: 1.0}
+
+        evaluator._score_ragas_metrics = AsyncMock(side_effect=score_sample)  # type: ignore[method-assign]
+        evaluator._close_wrappers = AsyncMock()  # type: ignore[method-assign]
+        samples = [
+            {
+                "query": "first",
+                "retrieved_chunks": ["context"],
+                "generated_answer": "answer",
+                "reference_answer": "reference",
+            },
+            {
+                "query": "second",
+                "retrieved_chunks": ["context"],
+                "generated_answer": "answer",
+                "reference_answer": "reference",
+            },
+        ]
+
+        results = evaluator.evaluate_batch(samples, concurrency=2)
+
+        assert results == [{"first": 1.0}, {"second": 1.0}]
 
 
 class TestRagasEvaluatorFactory:

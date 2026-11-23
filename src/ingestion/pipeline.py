@@ -28,6 +28,7 @@ from src.observability.logger import get_logger
 # Libs layer imports
 from src.libs.loader.file_integrity import SQLiteIntegrityChecker
 from src.libs.loader.pdf_loader import PdfLoader
+from src.libs.loader.text_loader import TextLoader
 from src.libs.embedding.embedding_factory import EmbeddingFactory
 from src.libs.vector_store.vector_store_factory import VectorStoreFactory
 
@@ -141,12 +142,13 @@ class IngestionPipeline:
         self.integrity_checker = SQLiteIntegrityChecker(db_path=str(resolve_path("data/db/ingestion_history.db")))
         logger.info("  ✓ FileIntegrityChecker initialized")
         
-        # Stage 2: Loader
+        # Stage 2: Loaders (dispatched by file suffix)
         self.loader = PdfLoader(
             extract_images=True,
             image_storage_dir=str(resolve_path(f"data/images/{collection}"))
         )
-        logger.info("  ✓ PdfLoader initialized")
+        self.text_loader = TextLoader()
+        logger.info("  ✓ PdfLoader / TextLoader initialized")
         
         # Stage 3: Chunker
         self.chunker = DocumentChunker(settings)
@@ -194,6 +196,28 @@ class IngestionPipeline:
         
         logger.info("Pipeline initialization complete!")
     
+    def _get_loader(self, file_path: Path):
+        """Select the loader matching the file suffix.
+
+        Args:
+            file_path: Path to the file to ingest.
+
+        Returns:
+            A ``BaseLoader`` instance able to parse the file.
+
+        Raises:
+            ValueError: If the file suffix is not supported.
+        """
+        suffix = file_path.suffix.lower()
+        if suffix == ".pdf":
+            return self.loader
+        if suffix in (".txt", ".md"):
+            return self.text_loader
+        raise ValueError(
+            f"Unsupported file format: '{suffix or '(no extension)'}'. "
+            f"Supported formats: .pdf, .txt, .md"
+        )
+
     def run(
         self,
         file_path: str,
@@ -255,7 +279,7 @@ class IngestionPipeline:
             _notify("load", 2)
             
             _t0 = time.monotonic()
-            document = self.loader.load(str(file_path))
+            document = self._get_loader(file_path).load(str(file_path))
             _elapsed = (time.monotonic() - _t0) * 1000.0
             
             text_preview = document.text[:200].replace('\n', ' ') + "..." if len(document.text) > 200 else document.text
@@ -273,7 +297,7 @@ class IngestionPipeline:
             }
             if trace is not None:
                 trace.record_stage("load", {
-                    "method": "markitdown",
+                    "method": "markitdown" if file_path.suffix.lower() == ".pdf" else "plain_text",
                     "doc_id": document.id,
                     "text_length": len(document.text),
                     "image_count": image_count,

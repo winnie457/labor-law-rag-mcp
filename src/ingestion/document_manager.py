@@ -227,7 +227,9 @@ class DocumentManager:
                     return result
 
         # 1. ChromaDB – delete chunks matching source_hash
+        chunk_ids: List[str] = []
         try:
+            chunk_ids = self.chroma.get_ids_by_metadata({"doc_hash": source_hash})
             count = self.chroma.delete_by_metadata(
                 {"doc_hash": source_hash}
             )
@@ -235,11 +237,18 @@ class DocumentManager:
         except Exception as e:
             result.errors.append(f"ChromaDB delete failed: {e}")
 
-        # 2. BM25 – remove postings for this document
+        # 2. BM25 – remove postings for this document.
+        # BM25 matches postings by chunk_id, so the chunk IDs must be resolved
+        # before the ChromaDB records are gone.
         try:
-            result.bm25_removed = self.bm25.remove_document(
-                source_hash, collection
-            )
+            if chunk_ids:
+                removed = [
+                    self.bm25.remove_document(chunk_id, collection)
+                    for chunk_id in chunk_ids
+                ]
+                result.bm25_removed = any(removed)
+            else:
+                result.bm25_removed = False
         except Exception as e:
             result.errors.append(f"BM25 remove failed: {e}")
 

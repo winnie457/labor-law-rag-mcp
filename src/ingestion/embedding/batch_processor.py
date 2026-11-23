@@ -7,7 +7,9 @@ Design Principles:
 - Orchestration: Coordinates DenseEncoder and SparseEncoder in unified workflow
 - Config-Driven: Batch size from settings, not hardcoded
 - Observable: Records batch timing and statistics via TraceContext
-- Error Handling: Individual batch failures don't crash entire pipeline
+- Fail-Fast: Encoding failures raise with batch context instead of silently
+  dropping vectors (a silent failure produces a chunk/vector count mismatch
+  downstream that hides the real cause)
 - Deterministic: Same inputs produce same batching and results
 """
 
@@ -123,7 +125,8 @@ class BatchProcessor:
         
         Raises:
             ValueError: If chunks list is empty
-            RuntimeError: If both encoders fail completely
+            RuntimeError: If encoding fails for any batch (the real provider
+                error is preserved in the exception chain and trace)
         
         Example:
             >>> chunks = [Chunk(id=f"{i}", text=f"Text {i}", metadata={}) 
@@ -153,22 +156,27 @@ class BatchProcessor:
             try:
                 # Dense encoding
                 batch_dense = self.dense_encoder.encode(batch, trace=trace)
-                dense_vectors.extend(batch_dense)
                 
                 # Sparse encoding
                 batch_sparse = self.sparse_encoder.encode(batch, trace=trace)
-                sparse_stats.extend(batch_sparse)
-                
-                successful_chunks += len(batch)
                 
             except Exception as e:
-                # Record failure but continue with remaining batches
-                failed_chunks += len(batch)
+                # Fail fast with the real cause; silently dropping vectors here
+                # surfaces later as a confusing "chunk count != vector count".
                 if trace:
                     trace.record_stage(
                         f"batch_{batch_idx}_error",
                         {"error": str(e), "batch_size": len(batch)}
                     )
+                batch_end = batch_idx * self.batch_size + len(batch)
+                raise RuntimeError(
+                    f"Encoding failed for batch {batch_idx} "
+                    f"(chunks {batch_idx * self.batch_size}-{batch_end}): {e}"
+                ) from e
+            
+            dense_vectors.extend(batch_dense)
+            sparse_stats.extend(batch_sparse)
+            successful_chunks += len(batch)
             
             batch_duration = time.time() - batch_start
             

@@ -162,6 +162,22 @@ class TestRuleBasedEnrichment:
         assert 'summary' in result[0].metadata
         assert 'tags' in result[0].metadata
     
+    def test_document_title_is_preserved_and_chunk_title_is_separate(
+        self, mock_settings_llm_disabled
+    ):
+        chunk = Chunk(
+            id="legal_chunk",
+            text="# 第一条 适用范围\n本法规定劳动合同的订立。",
+            metadata={"source_path": "laws/labor.md", "title": "《北京市劳动合同法》"},
+        )
+
+        result = MetadataEnricher(mock_settings_llm_disabled).transform([chunk])[0]
+
+        assert result.metadata["title"] == "《北京市劳动合同法》"
+        assert result.metadata["chunk_title"] == "第一条 适用范围"
+        assert result.metadata["region"] == "北京市"
+        assert result.metadata["authority_level"] == "法律"
+
     def test_empty_text_handling(self, mock_settings_llm_disabled):
         """Should handle empty text gracefully."""
         chunk = Chunk(

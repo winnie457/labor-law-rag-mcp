@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import tempfile
+from types import SimpleNamespace
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
@@ -165,6 +166,78 @@ class TestEvalRunner:
         report = runner.run(f)
 
         assert "Generated answer for: Q" == report.query_results[0].generated_answer
+
+    def test_unanswerable_case_reports_retrieval_and_hallucination(self, tmp_path: Path) -> None:
+        f = tmp_path / "golden.json"
+        _write_golden_json(f, [
+            {"query": "Unknown query", "answerable": False},
+        ])
+        mock_search = MagicMock()
+        mock_search.search.return_value = [
+            MagicMock(chunk_id="c1", text="retrieved text", metadata={}),
+        ]
+        runner = EvalRunner(
+            hybrid_search=mock_search,
+            evaluator=StubEvaluator(),
+            answer_generator=lambda query, chunks: "Unsupported answer",
+        )
+
+        report = runner.run(f)
+
+        assert report.aggregate_metrics["empty_recall"] == 0.0
+        assert report.aggregate_metrics["abstention_rate"] == 0.0
+        assert report.aggregate_metrics["hallucination_rate"] == 1.0
+        assert report.query_results[0].metrics.get("hit_rate") is None
+
+    def test_unanswerable_empty_retrieval_counts_as_abstention(self, tmp_path: Path) -> None:
+        f = tmp_path / "golden.json"
+        _write_golden_json(f, [
+            {"query": "Unknown query", "answerable": False},
+        ])
+
+        mock_search = MagicMock()
+        mock_search.search.return_value = []
+        report = EvalRunner(
+            hybrid_search=mock_search,
+            evaluator=StubEvaluator(),
+            answer_generator=lambda query, chunks: None,
+        ).run(f)
+
+        assert report.aggregate_metrics["empty_recall"] == 1.0
+        assert report.aggregate_metrics["abstention_rate"] == 1.0
+        assert report.aggregate_metrics["hallucination_rate"] == 0.0
+
+    def test_reranker_fallback_is_retried(self) -> None:
+        source_results = [MagicMock(chunk_id="c1"), MagicMock(chunk_id="c2")]
+        search = MagicMock()
+        search.search.return_value = source_results
+        reranker = MagicMock()
+        reranker.is_enabled = True
+        reranker.rerank.side_effect = [
+            SimpleNamespace(
+                used_fallback=True,
+                fallback_reason="timeout",
+                results=source_results[:1],
+            ),
+            SimpleNamespace(
+                used_fallback=False,
+                fallback_reason=None,
+                results=source_results[1:],
+            ),
+        ]
+        runner = EvalRunner(
+            hybrid_search=search,
+            evaluator=StubEvaluator(),
+            reranker=reranker,
+            rerank_retries=1,
+            rerank_retry_delay_seconds=0,
+        )
+
+        results = runner._retrieve("query", top_k=1, collection=None)
+
+        search.search.assert_called_once_with(query="query", top_k=30)
+        assert reranker.rerank.call_count == 2
+        assert results == source_results[1:]
 
     def test_report_to_dict(self, tmp_path: Path) -> None:
         f = tmp_path / "g.json"

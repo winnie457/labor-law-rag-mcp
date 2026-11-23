@@ -14,6 +14,7 @@ Design Principles:
 
 from typing import List, Optional, Any
 from src.core.types import Chunk
+from src.ingestion.embedding.text_preparation import build_embedding_text
 from src.libs.embedding.base_embedding import BaseEmbedding
 
 
@@ -100,7 +101,7 @@ class DenseEncoder:
             raise ValueError("Cannot encode empty chunks list")
         
         # Extract text from chunks
-        texts = [chunk.text for chunk in chunks]
+        texts = [build_embedding_text(chunk) for chunk in chunks]
         
         # Validate that all texts are non-empty
         for i, text in enumerate(texts):

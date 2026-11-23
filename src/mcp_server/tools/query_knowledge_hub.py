@@ -78,11 +78,15 @@ class QueryKnowledgeHubConfig:
         max_top_k: Maximum allowed top_k value
         default_collection: Default collection if not specified
         enable_rerank: Whether to apply reranking
+        enable_answer_generation: Whether to generate an LLM answer from
+            the retrieved chunks. If False or the LLM is unavailable,
+            the tool returns retrieval results only.
     """
     default_top_k: int = 5
     max_top_k: int = 20
     default_collection: str = "default"
     enable_rerank: bool = True
+    enable_answer_generation: bool = True
 
 
 class QueryKnowledgeHubTool:
@@ -125,7 +129,8 @@ class QueryKnowledgeHubTool:
         self._reranker = reranker
         self._embedding_client = None
         self._response_builder = response_builder or ResponseBuilder()
-        
+        self._answer_generator = None
+
         # Track initialization state
         self._initialized = False
         self._current_collection: Optional[str] = None
@@ -136,6 +141,15 @@ class QueryKnowledgeHubTool:
         if self._settings is None:
             self._settings = load_settings()
         return self._settings
+
+    @property
+    def answer_generator(self):
+        """Lazy-load the AnswerGenerator (LLM-backed)."""
+        if self._answer_generator is None:
+            from src.core.response.answer_generator import AnswerGenerator
+
+            self._answer_generator = AnswerGenerator(settings=self.settings)
+        return self._answer_generator
     
     def _ensure_initialized(self, collection: str) -> None:
         """Ensure search components are initialized for the given collection.
@@ -287,7 +301,27 @@ class QueryKnowledgeHubTool:
                 query=query,
                 collection=effective_collection,
             )
-            
+
+            # Generate an LLM answer grounded in the retrieved chunks.
+            # On failure (no LLM / API error), keep the retrieval-only
+            # response unchanged.
+            if self.config.enable_answer_generation and results:
+                _ans_t0 = _time.monotonic()
+                answer = await asyncio.to_thread(
+                    self.answer_generator.generate, query, results, trace,
+                )
+                _ans_elapsed = (_time.monotonic() - _ans_t0) * 1000.0
+                trace.record_stage(
+                    "answer_generation",
+                    {"generated": answer is not None},
+                    elapsed_ms=_ans_elapsed,
+                )
+                if answer:
+                    response.content = (
+                        f"## 回答\n\n{answer}\n\n---\n\n" + response.content
+                    )
+                    response.metadata["answer_generated"] = True
+
             # Store final results in trace for dashboard display
             trace.metadata["final_results"] = [
                 {
@@ -334,7 +368,12 @@ class QueryKnowledgeHubTool:
             raise RuntimeError("HybridSearch not initialized")
         
         # Use a larger initial retrieval for reranking
-        initial_top_k = top_k * 2 if self.config.enable_rerank else top_k
+        rerank_enabled = (
+            self.config.enable_rerank
+            and self._reranker is not None
+            and self._reranker.is_enabled
+        )
+        initial_top_k = max(top_k * 6, 30) if rerank_enabled else top_k
         
         try:
             results = self._hybrid_search.search(

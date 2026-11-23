@@ -65,6 +65,8 @@ def test_load_settings_success(tmp_path: Path) -> None:
     assert settings.embedding.dimensions == 1536
     assert settings.vector_store.collection_name == "knowledge_hub"
     assert settings.retrieval.rrf_k == 60
+    assert settings.retrieval.dense_weight == 2.0
+    assert settings.retrieval.sparse_weight == 1.0
     assert settings.rerank.provider == "none"
     assert settings.evaluation.metrics == ["hit_rate", "mrr"]
     assert settings.observability.log_level == "INFO"

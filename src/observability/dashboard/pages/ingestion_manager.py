@@ -9,7 +9,6 @@ Layout:
 from __future__ import annotations
 
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
 import streamlit as st
 
@@ -22,18 +21,18 @@ def _run_ingestion(
     progress_bar: "st.delta_generator.DeltaGenerator",
     status_text: "st.delta_generator.DeltaGenerator",
 ) -> None:
-    """Save the uploaded file to a temp location and run the pipeline."""
+    """Persist the uploaded file under data/uploads and run the pipeline."""
     from src.core.settings import load_settings
     from src.core.trace import TraceContext, TraceCollector
     from src.ingestion.pipeline import IngestionPipeline
 
     settings = load_settings()
 
-    # Write uploaded file to a temp location
-    suffix = Path(uploaded_file.name).suffix
-    with NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        tmp.write(uploaded_file.getbuffer())
-        tmp_path = tmp.name
+    # Persist the upload so source_path stays readable and stable across runs
+    upload_dir = Path("data/uploads") / collection
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    file_path = upload_dir / Path(uploaded_file.name).name
+    file_path.write_bytes(uploaded_file.getbuffer())
 
     _STAGE_LABELS = {
         "integrity": "🔍 Checking file integrity…",
@@ -57,22 +56,21 @@ def _run_ingestion(
 
     try:
         pipeline = IngestionPipeline(settings, collection=collection)
-        pipeline.run(
-            file_path=tmp_path,
+        result = pipeline.run(
+            file_path=file_path,
             trace=trace,
             on_progress=on_progress,
         )
+        if not result.success:
+            progress_bar.progress(1.0, text="❌ Failed")
+            status_text.error(f"Ingestion failed: {result.error}")
+            return
         progress_bar.progress(1.0, text="✅ Complete")
         status_text.success(f"Successfully ingested **{uploaded_file.name}** into collection **{collection}**.")
     except Exception as exc:
         status_text.error(f"Ingestion failed: {exc}")
     finally:
         TraceCollector().collect(trace)
-        # Clean up temp file
-        try:
-            Path(tmp_path).unlink(missing_ok=True)
-        except Exception:
-            pass
 
 
 def render() -> None:
@@ -86,7 +84,7 @@ def render() -> None:
     with col1:
         uploaded = st.file_uploader(
             "Select a file to ingest",
-            type=["pdf", "txt", "md", "docx"],
+            type=["pdf", "txt", "md"],
             key="ingest_uploader",
         )
     with col2:
@@ -113,7 +111,7 @@ def render() -> None:
     if not docs:
         st.info(
             "**No documents ingested yet.** "
-            "Upload a PDF, TXT, MD, or DOCX file above and click \"Start Ingestion\" to begin."
+            "Upload a PDF, TXT, or MD file above and click \"Start Ingestion\" to begin."
         )
         return
 

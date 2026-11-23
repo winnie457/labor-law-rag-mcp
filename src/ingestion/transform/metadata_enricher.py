@@ -141,11 +141,11 @@ class MetadataEnricher(BaseTransform):
                 enriched_metadata = rule_metadata
                 enriched_by = "rule"
             
-            final_metadata = {
-                **(chunk.metadata or {}),
-                **enriched_metadata,
-                'enriched_by': enriched_by
-            }
+            final_metadata = self._merge_enriched_metadata(
+                chunk.metadata or {},
+                enriched_metadata,
+                enriched_by,
+            )
             
             enriched_chunk = Chunk(
                 id=chunk.id,
@@ -160,14 +160,16 @@ class MetadataEnricher(BaseTransform):
             text_preview = ""
             if chunk.text:
                 text_preview = chunk.text[:100] + '...' if len(chunk.text) > 100 else chunk.text
-            minimal_metadata = {
-                **(chunk.metadata or {}),
-                'title': 'Untitled',
-                'summary': text_preview,
-                'tags': [],
-                'enriched_by': 'error',
-                'enrich_error': str(e)
-            }
+            minimal_metadata = self._merge_enriched_metadata(
+                chunk.metadata or {},
+                {
+                    'title': 'Untitled',
+                    'summary': text_preview,
+                    'tags': [],
+                    'enrich_error': str(e),
+                },
+                'error',
+            )
             enriched_chunk = Chunk(
                 id=chunk.id,
                 text=chunk.text or "",
@@ -266,11 +268,11 @@ class MetadataEnricher(BaseTransform):
                     enriched_by = "rule"
                 
                 # Merge enriched metadata with existing metadata
-                final_metadata = {
-                    **(chunk.metadata or {}),
-                    **enriched_metadata,
-                    'enriched_by': enriched_by
-                }
+                final_metadata = self._merge_enriched_metadata(
+                    chunk.metadata or {},
+                    enriched_metadata,
+                    enriched_by,
+                )
                 
                 # Create enriched chunk
                 enriched_chunk = Chunk(
@@ -289,14 +291,16 @@ class MetadataEnricher(BaseTransform):
                 text_preview = ""
                 if chunk.text:
                     text_preview = chunk.text[:100] + '...' if len(chunk.text) > 100 else chunk.text
-                minimal_metadata = {
-                    **(chunk.metadata or {}),
-                    'title': 'Untitled',
-                    'summary': text_preview,
-                    'tags': [],
-                    'enriched_by': 'error',
-                    'enrich_error': str(e)
-                }
+                minimal_metadata = self._merge_enriched_metadata(
+                    chunk.metadata or {},
+                    {
+                        'title': 'Untitled',
+                        'summary': text_preview,
+                        'tags': [],
+                        'enrich_error': str(e),
+                    },
+                    'error',
+                )
                 enriched_chunk = Chunk(
                     id=chunk.id,
                     text=chunk.text or "",  # Ensure text is not None
@@ -322,6 +326,88 @@ class MetadataEnricher(BaseTransform):
         )
         
         return enriched_chunks
+
+    @classmethod
+    def _merge_enriched_metadata(
+        cls,
+        existing: Dict[str, Any],
+        enriched: Dict[str, Any],
+        enriched_by: str,
+    ) -> Dict[str, Any]:
+        """Keep document metadata authoritative over inferred chunk metadata."""
+        final_metadata = dict(existing)
+        inferred_title = enriched.get("title")
+        for key, value in enriched.items():
+            if key != "title":
+                final_metadata[key] = value
+
+        if inferred_title:
+            if final_metadata.get("title"):
+                if inferred_title != "Untitled":
+                    final_metadata.setdefault("chunk_title", inferred_title)
+            else:
+                final_metadata["title"] = inferred_title
+
+        title_for_classification = str(
+            final_metadata.get("title")
+            or final_metadata.get("chunk_title")
+            or final_metadata.get("source_path")
+            or ""
+        )
+        if not final_metadata.get("region"):
+            region = cls._extract_region(title_for_classification)
+            if region:
+                final_metadata["region"] = region
+        if not final_metadata.get("authority_level"):
+            authority_level = cls._extract_authority_level(title_for_classification)
+            if authority_level:
+                final_metadata["authority_level"] = authority_level
+
+        final_metadata["enriched_by"] = enriched_by
+        return final_metadata
+
+    @staticmethod
+    def _extract_region(title: str) -> Optional[str]:
+        title = title.strip().strip("《》 ")
+        provinces = (
+            "内蒙古自治区", "广西壮族自治区", "西藏自治区", "宁夏回族自治区",
+            "新疆维吾尔自治区", "香港特别行政区", "澳门特别行政区",
+            "北京市", "天津市", "上海市", "重庆市", "河北省", "山西省",
+            "辽宁省", "吉林省", "黑龙江省", "江苏省", "浙江省", "安徽省",
+            "福建省", "江西省", "山东省", "河南省", "湖北省", "湖南省",
+            "广东省", "海南省", "四川省", "贵州省", "云南省", "陕西省",
+            "甘肃省", "青海省", "台湾省",
+        )
+        for province in provinces:
+            if province in title:
+                return province
+
+        city_match = re.search(r"([\u4e00-\u9fff]{2,6}市)", title)
+        if city_match:
+            return city_match.group(1)
+        return None
+
+    @staticmethod
+    def _extract_authority_level(title: str) -> Optional[str]:
+        title = title.strip().strip("《》 ")
+        if re.search(r"判决书|裁判文书|典型案例|指导案例|案例", title):
+            return "典型案例"
+        if re.search(r"官方解读|政策解读|答记者问|解读", title):
+            return "官方解读"
+        if re.search(r"司法解释|关于.*的解释|解释$", title):
+            return "司法解释"
+        if re.search(r"部令|委员会令|总局令|规章", title):
+            return "部门规章"
+        if re.search(r"省|自治区|市|特别行政区", title):
+            if "条例" in title:
+                return "地方性法规"
+            if re.search(r"办法|规定|细则", title):
+                return "地方政府规章"
+        if "条例" in title:
+            return "行政法规"
+        if re.search(r"法$", title):
+            return "法律"
+        return None
     
     def _rule_based_enrich(self, text: str) -> Dict[str, Any]:
         """Extract metadata using rule-based heuristics.

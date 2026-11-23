@@ -1,36 +1,5704 @@
 {
-  "description": "Golden test set for Modular RAG MCP Server evaluation. Contains test queries with expected chunk IDs for IR metrics and optional reference answers for LLM-as-Judge metrics.",
-  "version": "1.0",
+  "description": "劳动法/竞业限制领域 golden set。ground truth 只标注“文件名 + 关键原文片段”，不绑定 chunk_id；匹配时使用 source_path.endswith(文件名)。answerable=false 的用例不计入 hit@5 / MRR，仅用于观察拒答与空召回表现。v3.0 扩充至 330 条，覆盖单点、跨文档、跨地区混淆与库外拒答。",
+  "version": "3.0",
+  "collection": "default",
   "test_cases": [
     {
-      "query": "What is Modular RAG?",
+      "id": "S01",
+      "category": "single_point",
+      "answerable": true,
+      "query": "竞业限制期限最长不得超过多久？",
       "expected_chunk_ids": [],
-      "expected_sources": [],
-      "reference_answer": "Modular RAG is a Retrieval-Augmented Generation system built with modular, pluggable components that can be configured and swapped independently."
+      "expected_sources": [
+        "劳动合同法.md",
+        "企业实施竞业限制合规指引.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "竞业限制期限，不得超过二年。"
+        },
+        {
+          "source": "企业实施竞业限制合规指引.md",
+          "text": "竞业限制期限根据劳动者涉密程度和商业秘密时效合理确定，最长不得超过2年。"
+        }
+      ],
+      "reference_answer": "最长不得超过二年（2年）。"
     },
     {
-      "query": "How to configure Azure OpenAI?",
+      "id": "S02",
+      "category": "single_point",
+      "answerable": true,
+      "query": "竞业限制经济补偿的月度标准一般不低于劳动者离职前十二个月平均工资的多少？",
       "expected_chunk_ids": [],
-      "expected_sources": [],
-      "reference_answer": "Configure Azure OpenAI by setting the provider to 'azure' in settings.yaml, along with the deployment_name, azure_endpoint, api_version, and api_key fields."
+      "expected_sources": [
+        "企业实施竞业限制合规指引.md",
+        "劳动争议司法解释一.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业实施竞业限制合规指引.md",
+          "text": "企业支付给劳动者的月经济补偿一般不低于劳动者在劳动合同解除或终止前12个月平均工资的30%，且不低于劳动合同履行地最低工资标准。"
+        },
+        {
+          "source": "劳动争议司法解释一.md",
+          "text": "要求用人单位按照劳动者在劳动合同解除或者终止前十二个月平均工资的30%按月支付经济补偿的，人民法院应予支持。"
+        }
+      ],
+      "reference_answer": "一般不低于离职前十二个月平均工资的30%，且不低于劳动合同履行地最低工资标准；竞业限制期限超过1年的，一般不宜低于50%。"
     },
     {
-      "query": "What is hybrid search and how does it work?",
+      "id": "S03",
+      "category": "single_point",
+      "answerable": true,
+      "query": "竞业限制违约金一般不宜超过经济补偿总额的几倍？",
       "expected_chunk_ids": [],
-      "expected_sources": [],
-      "reference_answer": "Hybrid search combines dense retrieval (semantic embeddings) and sparse retrieval (BM25 keyword matching), then fuses results using Reciprocal Rank Fusion (RRF) for better recall."
+      "expected_sources": [
+        "企业实施竞业限制合规指引.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业实施竞业限制合规指引.md",
+          "text": "违约金的数额要根据劳动者泄露商业秘密可能造成的经济损失、企业支付给劳动者的竞业限制经济补偿的数额合理确定，一般不宜超过约定竞业限制经济补偿总额的5倍。"
+        }
+      ],
+      "reference_answer": "一般不宜超过约定竞业限制经济补偿总额的5倍。"
     },
     {
-      "query": "Explain the chunking strategy",
+      "id": "S04",
+      "category": "single_point",
+      "answerable": true,
+      "query": "哪些人员可以被纳入竞业限制的范围？",
       "expected_chunk_ids": [],
-      "expected_sources": [],
-      "reference_answer": "Documents are split into chunks using configurable strategies (recursive, semantic, or fixed-length). Chunks are then refined and enriched with metadata before storage."
+      "expected_sources": [
+        "劳动合同法.md",
+        "企业实施竞业限制合规指引.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "竞业限制的人员限于用人单位的高级管理人员、高级技术人员和其他负有保密义务的人员。"
+        },
+        {
+          "source": "企业实施竞业限制合规指引.md",
+          "text": "劳动者仅掌握行业通用的专业知识和技能，工作中接触到的仅为企业一般经营信息，不属于负有保密义务的人员。"
+        }
+      ],
+      "reference_answer": "限于高级管理人员、高级技术人员和其他负有保密义务的人员；仅掌握行业通用知识技能或仅接触一般经营信息的人员不属于此列。"
     },
     {
-      "query": "What evaluation metrics are supported?",
+      "id": "S05",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳动者在试用期的工资不得低于劳动合同约定工资的百分之多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳动合同法实施条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "劳动者在试用期的工资不得低于本单位相同岗位最低档工资或者劳动合同约定工资的百分之八十，并不得低于用人单位所在地的最低工资标准。"
+        },
+        {
+          "source": "劳动合同法实施条例.md",
+          "text": "劳动者在试用期的工资不得低于本单位相同岗位最低档工资的80%或者不得低于劳动合同约定工资的80%，并不得低于用人单位所在地的最低工资标准。"
+        }
+      ],
+      "reference_answer": "不得低于本单位相同岗位最低档工资或劳动合同约定工资的80%，且不得低于用人单位所在地最低工资标准。"
+    },
+    {
+      "id": "S06",
+      "category": "single_point",
+      "answerable": true,
+      "query": "三年以上固定期限劳动合同的试用期最长不得超过多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳动法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "三年以上固定期限和无固定期限的劳动合同，试用期不得超过六个月。"
+        },
+        {
+          "source": "劳动法.md",
+          "text": "劳动合同可以约定试用期。试用期最长不得超过六个月。"
+        }
+      ],
+      "reference_answer": "不得超过六个月。"
+    },
+    {
+      "id": "S07",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳动争议申请仲裁的时效期间是多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议调解仲裁法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议调解仲裁法.md",
+          "text": "劳动争议申请仲裁的时效期间为一年。仲裁时效期间从当事人知道或者应当知道其权利被侵害之日起计算。"
+        }
+      ],
+      "reference_answer": "一年，自当事人知道或者应当知道其权利被侵害之日起计算。"
+    },
+    {
+      "id": "S08",
+      "category": "single_point",
+      "answerable": true,
+      "query": "仲裁庭裁决劳动争议案件应当在受理后多少日内结束？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议调解仲裁法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议调解仲裁法.md",
+          "text": "仲裁庭裁决劳动争议案件，应当自劳动争议仲裁委员会受理仲裁申请之日起四十五日内结束。"
+        }
+      ],
+      "reference_answer": "应当自受理仲裁申请之日起四十五日内结束，案情复杂经批准可延期，延长期限不得超过十五日。"
+    },
+    {
+      "id": "S09",
+      "category": "single_point",
+      "answerable": true,
+      "query": "当事人对仲裁裁决不服的，应当在多少日内向人民法院提起诉讼？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议调解仲裁法.md",
+        "劳动法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议调解仲裁法.md",
+          "text": "当事人对本法第四十七条规定以外的其他劳动争议案件的仲裁裁决不服的，可以自收到仲裁裁决书之日起十五日内向人民法院提起诉讼。"
+        },
+        {
+          "source": "劳动法.md",
+          "text": "劳动争议当事人对仲裁裁决不服的，可以自收到仲裁裁决书之日起十五日内向人民法院提起诉讼。"
+        }
+      ],
+      "reference_answer": "自收到仲裁裁决书之日起十五日内向人民法院提起诉讼。"
+    },
+    {
+      "id": "S10",
+      "category": "single_point",
+      "answerable": true,
+      "query": "未订立书面劳动合同的二倍工资从什么时候开始算、算到什么时候？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法实施条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法实施条例.md",
+          "text": "用人单位向劳动者每月支付两倍工资的起算时间为用工之日起满一个月的次日，截止时间为补订书面劳动合同的前一日。"
+        }
+      ],
+      "reference_answer": "起算时间为用工之日起满一个月的次日，截止时间为补订书面劳动合同的前一日。"
+    },
+    {
+      "id": "S11",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用人单位安排劳动者在法定休假日工作，应按工资的百分之多少支付报酬？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动法.md",
+          "text": "法定休假日安排劳动者工作的，支付不低于工资的百分之三百的工资报酬。"
+        }
+      ],
+      "reference_answer": "不低于工资的百分之三百。"
+    },
+    {
+      "id": "S12",
+      "category": "single_point",
+      "answerable": true,
+      "query": "约定的违约金过分高于造成的损失时，当事人可以请求怎么处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "民法典节选.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "民法典节选.md",
+          "text": "约定的违约金过分高于造成的损失的，人民法院或者仲裁机构可以根据当事人的请求予以适当减少。"
+        }
+      ],
+      "reference_answer": "可以请求人民法院或者仲裁机构予以适当减少。"
+    },
+    {
+      "id": "S13",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳动者从未接触用人单位的商业秘密，能否请求确认竞业限制条款不生效？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议司法解释二.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议司法解释二.md",
+          "text": "劳动者未知悉、接触用人单位的商业秘密和与知识产权相关的保密事项，劳动者请求确认竞业限制条款不生效的，人民法院依法予以支持。"
+        }
+      ],
+      "reference_answer": "可以，人民法院依法予以支持。"
+    },
+    {
+      "id": "S14",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳动者支付竞业限制违约金后，用人单位还能要求其继续履行竞业限制义务吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议司法解释一.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议司法解释一.md",
+          "text": "劳动者违反竞业限制约定，向用人单位支付违约金后，用人单位要求劳动者按照约定继续履行竞业限制义务的，人民法院应予支持。"
+        }
+      ],
+      "reference_answer": "可以，人民法院应予支持。"
+    },
+    {
+      "id": "S15",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳动者提前多少日以书面形式通知用人单位可以解除劳动合同？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳动合同法实施条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "劳动者提前三十日以书面形式通知用人单位，可以解除劳动合同。劳动者在试用期内提前三日通知用人单位，可以解除劳动合同。"
+        },
+        {
+          "source": "劳动合同法实施条例.md",
+          "text": "劳动者提前30日以书面形式通知用人单位的"
+        }
+      ],
+      "reference_answer": "提前三十日以书面形式通知；试用期内提前三日通知。"
+    },
+    {
+      "id": "C01",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "用人单位与劳动者约定不缴纳社会保险费，该约定是否有效？劳动者能否据此解除劳动合同并主张经济补偿？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议司法解释二.md",
+        "最高法劳动争议司法解释二答记者问.md",
+        "劳动合同法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议司法解释二.md",
+          "text": "用人单位与劳动者约定或者劳动者向用人单位承诺无需缴纳社会保险费的，人民法院应当认定该约定或者承诺无效。"
+        },
+        {
+          "source": "最高法劳动争议司法解释二答记者问.md",
+          "text": "约定不缴纳社会保险费无效，劳动者据此解除劳动合同，用人单位需要支付解除劳动合同经济补偿"
+        },
+        {
+          "source": "劳动合同法.md",
+          "text": "未依法为劳动者缴纳社会保险费的"
+        }
+      ],
+      "reference_answer": "约定无效。劳动者可依据劳动合同法第三十八条解除劳动合同，并由用人单位支付经济补偿。"
+    },
+    {
+      "id": "C02",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "竞业限制条款在哪些情形下会被认定不生效、无效或者部分无效？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议司法解释二.md",
+        "企业实施竞业限制合规指引.md",
+        "劳动合同法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议司法解释二.md",
+          "text": "竞业限制条款约定的竞业限制范围、地域、期限等内容与劳动者知悉、接触的商业秘密和与知识产权相关的保密事项不相适应，劳动者请求确认竞业限制条款超过合理比例部分无效的，人民法院依法予以支持。"
+        },
+        {
+          "source": "企业实施竞业限制合规指引.md",
+          "text": "企业不得利用强势地位，违背劳动者意愿，订立违反法律规定或显失公平的竞业限制协议。"
+        },
+        {
+          "source": "劳动合同法.md",
+          "text": "竞业限制的范围、地域、期限由用人单位与劳动者约定，竞业限制的约定不得违反法律、法规的规定。"
+        }
+      ],
+      "reference_answer": "劳动者未接触商业秘密的，条款不生效；范围、地域、期限与劳动者知悉的商业秘密不相适应的，超过合理比例部分无效；违反法律强制性规定或显失公平的，亦可能被认定无效。"
+    },
+    {
+      "id": "C03",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "企业未按约定支付竞业限制经济补偿，劳动者有哪些救济途径？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业实施竞业限制合规指引.md",
+        "劳动争议司法解释一.md",
+        "人社部竞业限制合规指引解读.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业实施竞业限制合规指引.md",
+          "text": "企业未及时足额支付经济补偿超过1个月经劳动者提醒后仍未支付的，或超过3个月未支付的，劳动者可以不再履行竞业限制义务。"
+        },
+        {
+          "source": "劳动争议司法解释一.md",
+          "text": "因用人单位的原因导致三个月未支付经济补偿，劳动者请求解除竞业限制约定的，人民法院应予支持。"
+        },
+        {
+          "source": "人社部竞业限制合规指引解读.md",
+          "text": "对企业未按约定在竞业限制期限内给予劳动者经济补偿的，劳动者可以向人力资源社会保障行政部门投诉。"
+        }
+      ],
+      "reference_answer": "可向人社行政部门投诉；因用人单位原因三个月未支付经济补偿的，可请求解除竞业限制约定；符合条件的可不再履行竞业限制义务。"
+    },
+    {
+      "id": "C04",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "劳动合同被确认无效后，劳动者已经付出的劳动如何处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳动争议司法解释一.md",
+        "民法典节选.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "劳动合同被确认无效，劳动者已付出劳动的，用人单位应当向劳动者支付劳动报酬。"
+        },
+        {
+          "source": "劳动争议司法解释一.md",
+          "text": "劳动合同被确认为无效，劳动者已付出劳动的，用人单位应当按照劳动合同法第二十八条、第四十六条、第四十七条的规定向劳动者支付劳动报酬和经济补偿。"
+        },
+        {
+          "source": "民法典节选.md",
+          "text": "违反法律、行政法规的强制性规定的民事法律行为无效。"
+        }
+      ],
+      "reference_answer": "用人单位应参照本单位相同或相近岗位劳动者的劳动报酬支付劳动报酬；因用人单位原因订立无效合同造成损害的，还应赔偿损失并依法支付经济补偿。"
+    },
+    {
+      "id": "C05",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "发生劳动争议后，当事人可以选择哪些处理程序，顺序如何？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动争议调解仲裁法.md",
+        "劳动法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动争议调解仲裁法.md",
+          "text": "当事人不愿协商、协商不成或者达成和解协议后不履行的，可以向调解组织申请调解；不愿调解、调解不成或者达成调解协议后不履行的，可以向劳动争议仲裁委员会申请仲裁；对仲裁裁决不服的，除本法另有规定的外，可以向人民法院提起诉讼。"
+        },
+        {
+          "source": "劳动法.md",
+          "text": "劳动争议发生后，当事人可以向本单位劳动争议调解委员会申请调解；调解不成，当事人一方要求仲裁的，可以向劳动争议仲裁委员会申请仲裁。"
+        }
+      ],
+      "reference_answer": "协商—调解—仲裁—诉讼；仲裁是诉讼的前置程序。"
+    },
+    {
+      "id": "C06",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "用人单位违法解除劳动合同，劳动者可以要求继续履行还是赔偿金？赔偿标准是什么？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳动争议司法解释二.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "用人单位违反本法规定解除或者终止劳动合同，劳动者要求继续履行劳动合同的，用人单位应当继续履行；劳动者不要求继续履行劳动合同或者劳动合同已经不能继续履行的，用人单位应当依照本法第八十七条规定支付赔偿金。"
+        },
+        {
+          "source": "劳动合同法.md",
+          "text": "用人单位违反本法规定解除或者终止劳动合同的，应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。"
+        },
+        {
+          "source": "劳动争议司法解释二.md",
+          "text": "劳动合同在仲裁或者诉讼过程中期满且不存在应当依法续订、续延劳动合同情形的"
+        }
+      ],
+      "reference_answer": "劳动者可选择要求继续履行；不能继续履行或劳动者不要求的，用人单位按经济补偿标准的二倍支付赔偿金。"
+    },
+    {
+      "id": "U01",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "深圳市2025年全日制职工月最低工资标准是多少元？",
       "expected_chunk_ids": [],
       "expected_sources": [],
-      "reference_answer": "The system supports hit_rate, MRR (custom metrics), and Ragas LLM-as-Judge metrics including faithfulness, answer_relevancy, and context_precision."
+      "key_snippets": [],
+      "reference_answer": "语料不含具体地区最低工资标准金额，应拒答或说明需查询当地人社部门公布数据。"
+    },
+    {
+      "id": "U02",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "用人单位为职工缴存住房公积金的比例下限是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "语料未涉及住房公积金制度，应拒答。"
+    },
+    {
+      "id": "U03",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "竞业限制经济补偿金需要缴纳个人所得税吗？适用什么税率？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "语料未涉及个人所得税，应拒答。"
+    },
+    {
+      "id": "U04",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "外卖骑手等新就业形态劳动者职业伤害保障的赔付标准是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "语料未涉及新就业形态职业伤害保障，应拒答。"
+    },
+    {
+      "id": "S16",
+      "category": "single_point",
+      "answerable": true,
+      "query": "职工发生事故伤害后，所在单位应当在多少日内提出工伤认定申请？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤认定办法.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "工伤认定办法.md",
+          "clause": "第四条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤认定办法.md",
+          "text": "所在单位应当自事故伤害发生之日或者被诊断、鉴定为职业病之日起30日内，向统筹地区社会保险行政部门提出工伤认定申请。"
+        }
+      ],
+      "reference_answer": "所在单位应当自事故伤害发生之日或者被诊断、鉴定为职业病之日起30日内提出工伤认定申请；遇特殊情况经报社保行政部门同意可适当延长。"
+    },
+    {
+      "id": "S17",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用人单位未在规定时限内提出工伤认定申请，受伤害职工本人可以在多久内直接申请？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤认定办法.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "工伤认定办法.md",
+          "clause": "第五条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤认定办法.md",
+          "text": "受伤害职工或者其近亲属、工会组织在事故伤害发生之日或者被诊断、鉴定为职业病之日起1年内，可以直接按照本办法第四条规定提出工伤认定申请。"
+        }
+      ],
+      "reference_answer": "受伤害职工或者其近亲属、工会组织可以在事故伤害发生之日或者被诊断、鉴定为职业病之日起1年内，直接提出工伤认定申请。"
+    },
+    {
+      "id": "S18",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工伤认定中，职工认为是工伤但用人单位不认为是工伤的，由谁承担举证责任？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤认定办法.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "工伤认定办法.md",
+          "clause": "第十七条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤认定办法.md",
+          "text": "职工或者其近亲属认为是工伤，用人单位不认为是工伤的，由该用人单位承担举证责任。"
+        }
+      ],
+      "reference_answer": "由用人单位承担举证责任；用人单位拒不举证的，社保行政部门可以根据受伤害职工提供的证据或者调查取得的证据依法作出工伤认定决定。"
+    },
+    {
+      "id": "S19",
+      "category": "single_point",
+      "answerable": true,
+      "query": "社会保险行政部门应当自受理工伤认定申请之日起多少日内作出工伤认定决定？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤认定办法.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "工伤认定办法.md",
+          "clause": "第十八条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤认定办法.md",
+          "text": "社会保险行政部门应当自受理工伤认定申请之日起60日内作出工伤认定决定，出具《认定工伤决定书》或者《不予认定工伤决定书》。"
+        }
+      ],
+      "reference_answer": "应当自受理工伤认定申请之日起60日内作出工伤认定决定。"
+    },
+    {
+      "id": "S20",
+      "category": "single_point",
+      "answerable": true,
+      "query": "女职工生育享受多少天产假？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "女职工劳动保护特别规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "女职工劳动保护特别规定.md",
+          "clause": "第七条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "女职工劳动保护特别规定.md",
+          "text": "女职工生育享受98天产假，其中产前可以休假15天；难产的，增加产假15天；生育多胞胎的，每多生育1个婴儿，增加产假15天。"
+        }
+      ],
+      "reference_answer": "女职工生育享受98天产假，其中产前可休假15天；难产增加15天，每多生育1个婴儿增加15天。"
+    },
+    {
+      "id": "S21",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用人单位能否因女职工怀孕、生育、哺乳而降低其工资或辞退？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "女职工劳动保护特别规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "女职工劳动保护特别规定.md",
+          "clause": "第五条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "女职工劳动保护特别规定.md",
+          "text": "用人单位不得因女职工怀孕、生育、哺乳降低其工资、予以辞退、与其解除劳动或者聘用合同。"
+        }
+      ],
+      "reference_answer": "不得。用人单位不得因女职工怀孕、生育、哺乳降低其工资、予以辞退、与其解除劳动或者聘用合同。"
+    },
+    {
+      "id": "S22",
+      "category": "single_point",
+      "answerable": true,
+      "query": "职工连续工作满多少个月以上可以享受带薪年休假？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业职工带薪年休假实施办法.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "clause": "第三条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "text": "职工连续工作满12个月以上的，享受带薪年休假。"
+        }
+      ],
+      "reference_answer": "职工连续工作满12个月以上的，享受带薪年休假。"
+    },
+    {
+      "id": "S23",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用人单位不安排职工年休假的，应按日工资收入的多少支付未休年休假工资报酬？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业职工带薪年休假实施办法.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "clause": "第十条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "text": "应当在本年度内对职工应休未休年休假天数，按照其日工资收入的300%支付未休年休假工资报酬，其中包含用人单位支付职工正常工作期间的工资收入。"
+        }
+      ],
+      "reference_answer": "按照职工日工资收入的300%支付未休年休假工资报酬，其中包含用人单位支付职工正常工作期间的工资收入。"
+    },
+    {
+      "id": "S24",
+      "category": "single_point",
+      "answerable": true,
+      "query": "计算未休年休假工资报酬的日工资收入，按月工资除以多少天进行折算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业职工带薪年休假实施办法.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "clause": "第十一条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "text": "计算未休年休假工资报酬的日工资收入按照职工本人的月工资除以月计薪天数（21.75天）进行折算。"
+        }
+      ],
+      "reference_answer": "按照职工本人的月工资除以月计薪天数（21.75天）进行折算。"
+    },
+    {
+      "id": "S25",
+      "category": "single_point",
+      "answerable": true,
+      "query": "最低工资标准至少每几年调整一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最低工资规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "最低工资规定.md",
+          "clause": "第十条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "最低工资规定.md",
+          "text": "最低工资标准每两年至少调整一次。"
+        }
+      ],
+      "reference_answer": "最低工资标准每两年至少调整一次。"
+    },
+    {
+      "id": "S26",
+      "category": "single_point",
+      "answerable": true,
+      "query": "月最低工资标准适用于哪类就业劳动者？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最低工资规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "最低工资规定.md",
+          "clause": "第五条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "最低工资规定.md",
+          "text": "月最低工资标准适用于全日制就业劳动者，小时最低工资标准适用于非全日制就业劳动者。"
+        }
+      ],
+      "reference_answer": "月最低工资标准适用于全日制就业劳动者；小时最低工资标准适用于非全日制就业劳动者。"
+    },
+    {
+      "id": "S27",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用工单位使用被派遣劳动者的数量不得超过其用工总量的百分之多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳务派遣暂行规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "劳务派遣暂行规定.md",
+          "clause": "第四条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "劳务派遣暂行规定.md",
+          "text": "用工单位应当严格控制劳务派遣用工数量，使用的被派遣劳动者数量不得超过其用工总量的10%。"
+        }
+      ],
+      "reference_answer": "使用的被派遣劳动者数量不得超过其用工总量的10%。"
+    },
+    {
+      "id": "S28",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳务派遣单位应当与被派遣劳动者订立几年以上的固定期限书面劳动合同？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳务派遣暂行规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "劳务派遣暂行规定.md",
+          "clause": "第五条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "劳务派遣暂行规定.md",
+          "text": "劳务派遣单位应当依法与被派遣劳动者订立2年以上的固定期限书面劳动合同。"
+        }
+      ],
+      "reference_answer": "劳务派遣单位应当与被派遣劳动者订立2年以上的固定期限书面劳动合同。"
+    },
+    {
+      "id": "S29",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用人单位支付工资应当以什么形式支付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工资支付条例.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "广东省工资支付条例.md",
+          "clause": "第十条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工资支付条例.md",
+          "text": "用人单位应当以货币形式按照确定的工资支付周期足额支付工资，不得拖欠或者克扣。"
+        }
+      ],
+      "reference_answer": "用人单位应当以货币形式足额支付工资，不得拖欠或者克扣。"
+    },
+    {
+      "id": "S30",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工资支付应当遵循什么原则？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工资支付条例.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "广东省工资支付条例.md",
+          "clause": "第四条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工资支付条例.md",
+          "text": "工资支付实行按时足额、优先支付原则。"
+        }
+      ],
+      "reference_answer": "工资支付实行按时足额、优先支付原则。"
+    },
+    {
+      "id": "S31",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用人单位应当至少每月向劳动者支付几次工资？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "北京市工资支付规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "北京市工资支付规定.md",
+          "clause": "第九条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "北京市工资支付规定.md",
+          "text": "用人单位应当至少每月向劳动者支付一次工资。"
+        }
+      ],
+      "reference_answer": "用人单位应当至少每月向劳动者支付一次工资。"
+    },
+    {
+      "id": "S32",
+      "category": "single_point",
+      "answerable": true,
+      "query": "用人单位能否以实物、有价证券代替货币支付工资？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "北京市工资支付规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "北京市工资支付规定.md",
+          "clause": "第八条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "北京市工资支付规定.md",
+          "text": "用人单位应当以货币形式支付工资，不得以实物、有价证券等代替货币支付。"
+        }
+      ],
+      "reference_answer": "不能。用人单位应当以货币形式支付工资，不得以实物、有价证券等代替货币支付。"
+    },
+    {
+      "id": "S33",
+      "category": "single_point",
+      "answerable": true,
+      "query": "上海企业与劳动者终止或解除劳动合同时，工资应当在何时付清？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市企业工资支付办法.md",
+          "text": "企业与劳动者终止或依法解除劳动合同的，企业应当在与劳动者办妥手续时，一次性付清劳动者的工资。"
+        }
+      ],
+      "reference_answer": "企业应当在与劳动者办妥手续时，一次性付清劳动者的工资。"
+    },
+    {
+      "id": "C07",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "劳务派遣工能否享受带薪年休假？未安排休假的如何补偿？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业职工带薪年休假实施办法.md",
+        "劳务派遣暂行规定.md"
+      ],
+      "expected_clauses": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "clause": "第十四条"
+        }
+      ],
+      "key_snippets": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "text": "劳务派遣单位的职工符合本办法第三条规定条件的，享受年休假。"
+        },
+        {
+          "source": "劳务派遣暂行规定.md",
+          "text": "劳务派遣单位应当依法与被派遣劳动者订立2年以上的固定期限书面劳动合同。"
+        }
+      ],
+      "reference_answer": "劳务派遣工符合连续工作满12个月条件的享受带薪年休假；被派遣职工在无工作期间由劳务派遣单位支付劳动报酬的天数多于全年应享年休假天数的，不享受当年年休假；少于的，劳务派遣单位与用工单位应协商安排补足。"
+    },
+    {
+      "id": "U05",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "北京市2025年全日制职工月最低工资标准具体是多少元？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "语料仅含最低工资制度规定，不含各地区具体最低工资金额，应拒答并提示查询当地人社部门公布数据。"
+    },
+    {
+      "id": "N001",
+      "category": "single_point",
+      "answerable": true,
+      "query": "什么情况下受的伤能被认定为工伤？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第十四条 职工有下列情形之一的，应当认定为工伤：\n\n（一）在工作时间和工作场所内，"
+        }
+      ],
+      "reference_answer": "在工作时间和工作场所内因工作原因受伤、患职业病、因工外出受伤、上下班途中非本人主要责任的交通事故等情形应认定为工伤。"
+    },
+    {
+      "id": "N002",
+      "category": "single_point",
+      "answerable": true,
+      "query": "员工在上班时突发疾病死亡，能不能按工伤处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第十五条 职工有下列情形之一的，视同工伤：\n\n（一）在工作时间和工作岗位，"
+        }
+      ],
+      "reference_answer": "在工作时间和工作岗位突发疾病死亡或在48小时内经抢救无效死亡的，视同工伤。"
+    },
+    {
+      "id": "N003",
+      "category": "single_point",
+      "answerable": true,
+      "query": "单位一直不申请工伤认定，我自己最晚多久内可以去申请？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第十七条 职工发生事故伤害或者按照职业病防治法规定被诊断、鉴定为职业病，"
+        }
+      ],
+      "reference_answer": "用人单位应在事故伤害发生之日起30日内申请；单位未申请的，职工或其近亲属、工会可在1年内直接申请。"
+    },
+    {
+      "id": "N004",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工伤职工停工留薪期工资怎么发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第三十三条 职工因工作遭受事故伤害或者患职业病需要暂停工作接受工伤医疗的，在停工留薪期内，原工资福利待遇不变，"
+        }
+      ],
+      "reference_answer": "停工留薪期内原工资福利待遇不变，由所在单位按月支付，一般不超过12个月。"
+    },
+    {
+      "id": "N005",
+      "category": "single_point",
+      "answerable": true,
+      "query": "职工因工致残被鉴定为十级伤残，能拿到哪些待遇？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第三十七条 职工因工致残被鉴定为七级至十级伤残的，"
+        }
+      ],
+      "reference_answer": "十级伤残为7个月本人工资的一次性伤残补助金，解除或终止劳动合同时另付一次性工伤医疗补助金和伤残就业补助金。"
+    },
+    {
+      "id": "N006",
+      "category": "single_point",
+      "answerable": true,
+      "query": "职工因工死亡，家属能领哪些钱？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第三十九条 职工因工死亡，其近亲属按照下列规定从工伤保险基金领取丧葬补助金、供养亲属抚恤金和一次性工亡补助金："
+        }
+      ],
+      "reference_answer": "近亲属可领取丧葬补助金、供养亲属抚恤金和一次性工亡补助金。"
+    },
+    {
+      "id": "N007",
+      "category": "single_point",
+      "answerable": true,
+      "query": "领失业保险金需要满足哪些条件？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第四十五条 失业人员符合下列条件的，从失业保险基金中领取失业保险金：\n\n（一）失业前用人单位和本人已经缴纳失业保"
+        }
+      ],
+      "reference_answer": "失业前用人单位和本人已缴费满1年、非因本人意愿中断就业、已办理失业登记并有求职要求。"
+    },
+    {
+      "id": "N008",
+      "category": "single_point",
+      "answerable": true,
+      "query": "公司新招了员工，多久内要办社保登记？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第五十八条 用人单位应当自用工之日起三十日内为其职工向社会保险经办机构申请办理社会保险登记。"
+        }
+      ],
+      "reference_answer": "用人单位应当自用工之日起30日内为其职工向社会保险经办机构申请办理社会保险登记。"
+    },
+    {
+      "id": "N009",
+      "category": "single_point",
+      "answerable": true,
+      "query": "公司欠缴社保费会有什么后果？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第八十六条 用人单位未按时足额缴纳社会保险费的，由社会保险费征收机构责令限期缴纳或者补足，并自欠缴之日起，"
+        }
+      ],
+      "reference_answer": "责令限期缴纳或补足，并自欠缴之日起按日加收万分之五的滞纳金；逾期仍不缴的处欠缴数额1倍以上3倍以下罚款。"
+    },
+    {
+      "id": "N010",
+      "category": "single_point",
+      "answerable": true,
+      "query": "公司账户没钱又不缴社保，社保机构能怎么办？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "用人单位账户余额少于应当缴纳的社会保险费的，社会保险费征收机构可以要求该用人单位提供担保，签订延期缴费协议。"
+        }
+      ],
+      "reference_answer": "可查询存款账户并申请县级以上行政部门作出划拨决定，账户余额少于应缴数额的可要求提供担保、签订延期缴费协议。"
+    },
+    {
+      "id": "N011",
+      "category": "single_point",
+      "answerable": true,
+      "query": "农民工工资专用账户是干什么用的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "保障农民工工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "保障农民工工资支付条例.md",
+          "text": "第二十六条 施工总承包单位应当按照有关规定开设农民工工资专用账户，专项用于支付该工程建设项目农民工工资。"
+        }
+      ],
+      "reference_answer": "施工总承包单位应当按照有关规定开设农民工工资专用账户，专项用于支付该工程建设项目农民工工资。"
+    },
+    {
+      "id": "N012",
+      "category": "single_point",
+      "answerable": true,
+      "query": "分包单位招的农民工，工资由谁发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "保障农民工工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "保障农民工工资支付条例.md",
+          "text": "第三十一条 工程建设领域推行分包单位农民工工资委托施工总承包单位代发制度。"
+        }
+      ],
+      "reference_answer": "推行分包单位农民工工资委托施工总承包单位代发制度，由总包通过专用账户直接代发到农民工本人银行账户。"
+    },
+    {
+      "id": "N013",
+      "category": "single_point",
+      "answerable": true,
+      "query": "什么是农民工工资保证金？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "保障农民工工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "保障农民工工资支付条例.md",
+          "text": "第三十二条 施工总承包单位应当按照有关规定存储工资保证金，专项用于支付为所承包工程提供劳动的农民工被拖欠的工资。"
+        }
+      ],
+      "reference_answer": "施工总承包单位按规定存储的专项用于支付为所承包工程提供劳动的农民工被拖欠工资的资金，可用金融机构保函替代。"
+    },
+    {
+      "id": "N014",
+      "category": "single_point",
+      "answerable": true,
+      "query": "集体协商一般谈哪些内容？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "集体合同规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "集体合同规定.md",
+          "text": "第八条 集体协商双方可以就下列多项或某项内容进行集体协商，"
+        }
+      ],
+      "reference_answer": "劳动报酬、工作时间、休息休假、劳动安全卫生、保险福利、女职工和未成年工特殊保护、职业技能培训等。"
+    },
+    {
+      "id": "N015",
+      "category": "single_point",
+      "answerable": true,
+      "query": "集体合同一般签几年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "集体合同规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "集体合同规定.md",
+          "text": "第三十八条 集体合同或专项集体合同期限一般为\n\n1至3年，期满或双方约定的终止条件出现，即行终止。"
+        }
+      ],
+      "reference_answer": "集体合同期限一般为1至3年，期满或双方约定的终止条件出现即行终止。"
+    },
+    {
+      "id": "N016",
+      "category": "single_point",
+      "answerable": true,
+      "query": "企业年金是什么？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业年金办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业年金办法.md",
+          "text": "第二条 本办法所称企业年金，是指企业及其职工在依法参加基本养老保险的基础上，自主建立的补充养老保险制度。"
+        }
+      ],
+      "reference_answer": "企业及其职工在依法参加基本养老保险基础上自主建立的补充养老保险制度。"
+    },
+    {
+      "id": "N017",
+      "category": "single_point",
+      "answerable": true,
+      "query": "企业年金方案应当提交谁讨论通过？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业年金办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业年金办法.md",
+          "text": "第七条 建立企业年金，企业应当与职工一方通过集体协商确定，并制定企业年金方案。"
+        }
+      ],
+      "reference_answer": "企业年金方案应当提交职工代表大会或者全体职工讨论通过。"
+    },
+    {
+      "id": "N018",
+      "category": "single_point",
+      "answerable": true,
+      "query": "职工住房公积金月缴存额怎么算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "住房公积金管理条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "住房公积金管理条例.md",
+          "text": "第十六条 职工住房公积金的月缴存额为职工本人上一年度月平均工资乘以职工住房公积金缴存比例。"
+        }
+      ],
+      "reference_answer": "职工本人上一年度月平均工资乘以职工住房公积金缴存比例。"
+    },
+    {
+      "id": "N019",
+      "category": "single_point",
+      "answerable": true,
+      "query": "什么情况下可以提取住房公积金？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "住房公积金管理条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "住房公积金管理条例.md",
+          "text": "第二十四条 职工有下列情形之一的，可以提取职工住房公积金账户内的存储余额：\n\n（一）支付房租的；\n\n（二）购买、"
+        }
+      ],
+      "reference_answer": "支付房租、购买建造翻建大修自住住房、离休退休、完全丧失劳动能力并与单位终止劳动关系、出境定居、偿还购房贷款本息等情形可提取。"
+    },
+    {
+      "id": "N020",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳动者找工作时有平等就业的权利吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国就业促进法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国就业促进法.md",
+          "text": "第三条 劳动者依法享有平等就业和自主择业的权利。"
+        }
+      ],
+      "reference_answer": "劳动者依法享有平等就业和自主择业的权利，不因民族、种族、性别、宗教信仰等不同而受歧视。"
+    },
+    {
+      "id": "N021",
+      "category": "single_point",
+      "answerable": true,
+      "query": "招聘时限定只要男性，违法吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国就业促进法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国就业促进法.md",
+          "text": "第二十七条 国家保障妇女享有与男子平等的劳动权利。"
+        }
+      ],
+      "reference_answer": "国家保障妇女享有与男子平等的劳动权利，用人单位招用人员不得以性别为由拒绝录用妇女或提高对妇女的录用标准。"
+    },
+    {
+      "id": "N022",
+      "category": "single_point",
+      "answerable": true,
+      "query": "因就业歧视打官司，走什么程序？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国就业促进法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国就业促进法.md",
+          "text": "第六十二条 违反本法规定，实施就业歧视的，劳动者可以向人民法院提起诉讼。"
+        }
+      ],
+      "reference_answer": "可以依法向人民法院提起诉讼。"
+    },
+    {
+      "id": "N023",
+      "category": "single_point",
+      "answerable": true,
+      "query": "接触粉尘的岗位，单位要安排体检吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国职业病防治法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国职业病防治法.md",
+          "text": "第三十二条 对从事接触职业病危害的作业的劳动者，"
+        }
+      ],
+      "reference_answer": "对从事接触职业病危害作业的劳动者，用人单位应当组织上岗前、在岗期间和离岗时的职业健康检查。"
+    },
+    {
+      "id": "N024",
+      "category": "single_point",
+      "answerable": true,
+      "query": "对职业病诊断结果有异议怎么办？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国职业病防治法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国职业病防治法.md",
+          "text": "第四十五条 当事人对职业病诊断有异议的，可以向作出诊断的医疗卫生机构所在地地方人民政府卫生行政部门申请鉴定。"
+        }
+      ],
+      "reference_answer": "可以向作出诊断的医疗卫生机构所在地地方人民政府卫生行政部门申请鉴定。"
+    },
+    {
+      "id": "N025",
+      "category": "single_point",
+      "answerable": true,
+      "query": "开劳务派遣公司注册资本要多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳务派遣行政许可实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳务派遣行政许可实施办法.md",
+          "text": "第七条 申请经营劳务派遣业务应当具备下列条件：\n\n（一）注册资本不得少于人民币200万元；\n\n（二）有与开展业务"
+        }
+      ],
+      "reference_answer": "注册资本不得少于人民币200万元。"
+    },
+    {
+      "id": "N026",
+      "category": "single_point",
+      "answerable": true,
+      "query": "劳务派遣经营许可证快到期了，要提前多久申请延续？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳务派遣行政许可实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳务派遣行政许可实施办法.md",
+          "text": "第十八条 劳务派遣单位需要延续行政许可有效期的，应当在有效期届满60日前向许可机关提出延续行政许可的书面申请，"
+        }
+      ],
+      "reference_answer": "应当在有效期届满60日前向许可机关提出延续行政许可的书面申请。"
+    },
+    {
+      "id": "N027",
+      "category": "single_point",
+      "answerable": true,
+      "query": "新员工上岗前必须接受安全培训吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国安全生产法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国安全生产法.md",
+          "text": "第二十八条\n\n生产经营单位应当对从业人员进行安全生产教育和培训，保证从业人员具备必要的安全生产知识，"
+        }
+      ],
+      "reference_answer": "生产经营单位应当对从业人员进行安全生产教育和培训，未经培训合格的从业人员不得上岗作业。"
+    },
+    {
+      "id": "N028",
+      "category": "single_point",
+      "answerable": true,
+      "query": "员工发现领导强令冒险作业，可以拒绝吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国安全生产法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国安全生产法.md",
+          "text": "第五十四条\n\n从业人员有权对本单位安全生产工作中存在的问题提出批评、检举、控告；有权拒绝违章指挥和强令冒险作业。"
+        }
+      ],
+      "reference_answer": "从业人员有权拒绝违章指挥和强令冒险作业，生产经营单位不得因此降低其工资、福利等待遇或者解除劳动合同。"
+    },
+    {
+      "id": "N029",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工会能帮职工签劳动合同吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国工会法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国工会法.md",
+          "text": "第二十条 工会帮助、指导职工与企业以及实行企业化管理的事业单位签订劳动合同。"
+        }
+      ],
+      "reference_answer": "工会帮助、指导职工与企业以及实行企业化管理的事业单位签订劳动合同。"
+    },
+    {
+      "id": "N030",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工会的经费从哪里来？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国工会法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国工会法.md",
+          "text": "第四十二条 工会经费的来源：\n\n(一)工会会员缴纳的会费；\n\n(二)建立工会组织的企业、事业单位、机关按每月全部"
+        }
+      ],
+      "reference_answer": "包括会员缴纳的会费、企业按每月全部职工工资总额2%拨缴的经费、上级工会补助等。"
+    },
+    {
+      "id": "N031",
+      "category": "single_point",
+      "answerable": true,
+      "query": "夏天中午外面太热，能不能停止室外作业？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "防暑降温措施管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "防暑降温措施管理办法.md",
+          "text": "第八条 在高温天气期间，用人单位应当按照下列规定，根据生产特点和具体条件，"
+        }
+      ],
+      "reference_answer": "日最高气温达到40℃以上应停止当日室外露天作业；37℃以上40℃以下时室外露天作业累计不得超过6小时等。"
+    },
+    {
+      "id": "N032",
+      "category": "single_point",
+      "answerable": true,
+      "query": "高温津贴算在最低工资里吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "防暑降温措施管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "防暑降温措施管理办法.md",
+          "text": "第十七条 劳动者从事高温作业的，依法享受岗位津贴。"
+        }
+      ],
+      "reference_answer": "用人单位安排劳动者高温作业的应当发放高温津贴，并纳入工资总额，防暑降温饮料不得充抵高温津贴。"
+    },
+    {
+      "id": "N033",
+      "category": "single_point",
+      "answerable": true,
+      "query": "单位不缴社保费，除补缴还要交滞纳金吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "社会保险费征缴暂行条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "社会保险费征缴暂行条例.md",
+          "text": "第十三条 缴费单位未按规定缴纳和代扣代缴社会保险费的，"
+        }
+      ],
+      "reference_answer": "除补缴外，从欠缴之日起按日加收千分之二的滞纳金，并入社会保险基金。"
+    },
+    {
+      "id": "N034",
+      "category": "single_point",
+      "answerable": true,
+      "query": "失业了，具备什么条件才能领失业保险金？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "失业保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "失业保险条例.md",
+          "text": "第十四条 具备下列条件的失业人员，可以领取失业保险金：\n\n（一）按照规定参加失业保险，"
+        }
+      ],
+      "reference_answer": "按规定缴费满1年、非因本人意愿中断就业、已办理失业登记并有求职要求。"
+    },
+    {
+      "id": "N035",
+      "category": "single_point",
+      "answerable": true,
+      "query": "失业保险金最多能领多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "失业保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "失业保险条例.md",
+          "text": "第十七条 失业人员失业前所在单位和本人按照规定累计缴费时间满1年不足5年的，"
+        }
+      ],
+      "reference_answer": "累计缴费满1年不足5年最长12个月，满5年不足10年最长18个月，满10年以上最长24个月。"
+    },
+    {
+      "id": "N036",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工作满12年的员工，年休假有几天？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "职工带薪年休假条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "职工带薪年休假条例.md",
+          "text": "第三条 职工累计工作已满1年不满10年的，年休假5天；已满10年不满20年的，年休假10天；已满20年的，"
+        }
+      ],
+      "reference_answer": "累计工作已满10年不满20年的，年休假10天；已满20年的15天。"
+    },
+    {
+      "id": "N037",
+      "category": "single_point",
+      "answerable": true,
+      "query": "年中入职的员工，当年年休假天数怎么折算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业职工带薪年休假实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "text": "第五条 职工新进用人单位且符合本办法第三条规定的，当年度年休假天数，按照在本单位剩余日历天数折算确定，"
+        }
+      ],
+      "reference_answer": "当年度在本单位剩余日历天数除以365再乘本人全年应当享受的年休假天数折算，不足1整天的部分不享受。"
+    },
+    {
+      "id": "N038",
+      "category": "single_point",
+      "answerable": true,
+      "query": "员工造成公司损失，每月最多从工资里扣多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "第十六条 因劳动者本人原因给用人单位造成经济损失的，用人单位可按照劳动合同的约定要求其赔偿经济损失。"
+        }
+      ],
+      "reference_answer": "每月扣除部分不得超过劳动者当月工资的20%，扣除后剩余部分低于当地月最低工资标准的按最低工资标准支付。"
+    },
+    {
+      "id": "N039",
+      "category": "single_point",
+      "answerable": true,
+      "query": "加班费能算进最低工资里吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最低工资规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最低工资规定.md",
+          "text": "第十二条  在劳动者提供正常劳动的情况下，用人单位应支付给劳动者的工资在剔除下列各项以后，"
+        }
+      ],
+      "reference_answer": "延长工作时间工资、特殊工作环境津贴、法定福利等不作为最低工资的组成部分。"
+    },
+    {
+      "id": "N040",
+      "category": "single_point",
+      "answerable": true,
+      "query": "女职工的产假是多少天？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "女职工劳动保护特别规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "女职工劳动保护特别规定.md",
+          "text": "第七条 女职工生育享受98天产假，其中产前可以休假15天；难产的，增加产假15天；生育多胞胎的，"
+        }
+      ],
+      "reference_answer": "女职工生育享受98天产假，其中产前可以休假15天；难产的增加15天，多胞胎每多生育1个婴儿增加15天。"
+    },
+    {
+      "id": "N041",
+      "category": "single_point",
+      "answerable": true,
+      "query": "公司一直不跟我签书面劳动合同，这样合法吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "第十条 建立劳动关系，应当订立书面劳动合同。"
+        }
+      ],
+      "reference_answer": "建立劳动关系应当订立书面劳动合同；已建立劳动关系未同时订立的，应自用工之日起一个月内订立。"
+    },
+    {
+      "id": "N042",
+      "category": "single_point",
+      "answerable": true,
+      "query": "加班工资的支付标准是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动法.md",
+          "text": "第四十四条\n\n有下列情形之一的，用人单位应当按照下列标准支付高于劳动者正常工作时间工资的工资报酬：\n\n（一）安排"
+        }
+      ],
+      "reference_answer": "延长工作时间支付不低于150%的工资报酬，休息日安排工作又不能补休的不低于200%，法定休假日不低于300%。"
+    },
+    {
+      "id": "N043",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "工伤职工被鉴定为五级伤残，一次性伤残补助金和伤残津贴分别由谁支付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md",
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第三十六条 职工因工致残被鉴定为五级、六级伤残的，"
+        },
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第三十八条 因工伤发生的下列费用，按照国家规定从工伤保险基金中支付：\n\n（一）治疗工伤的医疗费用和康复费用；"
+        }
+      ],
+      "reference_answer": "五级伤残为18个月本人工资的一次性伤残补助金，由工伤保险基金支付；难以安排工作的伤残津贴由用人单位按月发给。"
+    },
+    {
+      "id": "N044",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "公司没给员工缴工伤保险，员工发生工伤后医疗费和一次性伤残补助金找谁要？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md",
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第六十二条 用人单位依照本条例规定应当参加工伤保险而未参加的，由社会保险行政部门责令限期参加，"
+        },
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第四十一条 职工所在用人单位未依法缴纳工伤保险费，发生工伤事故的，由用人单位支付工伤保险待遇。"
+        }
+      ],
+      "reference_answer": "应当参加工伤保险而未参加的，由用人单位按条例规定的工伤保险待遇项目和标准支付费用；社保基金可先行支付后向单位追偿。"
+    },
+    {
+      "id": "N045",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "劳动合同到期终止，经济补偿按什么标准计算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳动法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "第四十七条 经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准向劳动者支付。"
+        },
+        {
+          "source": "劳动法.md",
+          "text": "第二十八条\n\n用人单位依据本法第二十四条、第二十六条、第二十七条的规定解除劳动合同的，"
+        }
+      ],
+      "reference_answer": "按劳动者在本单位工作年限，每满一年支付一个月工资；六个月以上不满一年按一年算，不满六个月支付半个月工资。"
+    },
+    {
+      "id": "N046",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "用人单位在哪些情形下可以裁减人员？裁减多少人要履行提前说明程序？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳动法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "第四十一条 有下列情形之一，需要裁减人员二十人以上或者裁减不足二十人但占企业职工总数百分之十以上的，"
+        },
+        {
+          "source": "劳动法.md",
+          "text": "第二十七条\n\n用人单位濒临破产进行法定整顿期间或者生产经营状况发生严重困难，确需裁减人员的，"
+        }
+      ],
+      "reference_answer": "依照企业破产法重整、生产经营严重困难、转产或重大技术革新等情形可裁减；裁减20人以上或不足20人但占职工总数10%以上需提前30日说明并报告。"
+    },
+    {
+      "id": "N047",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "职工年休假天数和未休年休假的工资补偿标准分别是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "职工带薪年休假条例.md",
+        "企业职工带薪年休假实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "职工带薪年休假条例.md",
+          "text": "第三条 职工累计工作已满1年不满10年的，年休假5天；已满10年不满20年的，年休假10天；已满20年的，"
+        },
+        {
+          "source": "企业职工带薪年休假实施办法.md",
+          "text": "第十条 用人单位经职工同意不安排年休假或者安排职工年休假天数少于应休年休假天数，"
+        }
+      ],
+      "reference_answer": "累计工作满1年不满10年年休假5天，满10年不满20年10天，满20年15天；未安排休假的按日工资收入的300%支付年休假工资报酬。"
+    },
+    {
+      "id": "N048",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "劳务派遣用工只能在哪些岗位上使用？临时性岗位最长能用多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动合同法.md",
+        "劳务派遣暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动合同法.md",
+          "text": "第六十六条 劳动合同用工是我国的企业基本用工形式。"
+        },
+        {
+          "source": "劳务派遣暂行规定.md",
+          "text": "第三条  用工单位只能在临时性、辅助性或者替代性的工作岗位上使用被派遣劳动者。"
+        }
+      ],
+      "reference_answer": "劳务派遣只能在临时性、辅助性、替代性岗位上使用；临时性工作岗位存续时间不超过六个月。"
+    },
+    {
+      "id": "N049",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "职工发生事故伤害后，单位和个人各自应在多长时间内提出工伤认定申请？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md",
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第十七条 职工发生事故伤害或者按照职业病防治法规定被诊断、鉴定为职业病，"
+        },
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第四十一条 职工所在用人单位未依法缴纳工伤保险费，发生工伤事故的，由用人单位支付工伤保险待遇。"
+        }
+      ],
+      "reference_answer": "单位应当自事故伤害发生之日起30日内提出申请；单位未按规定申请的，工伤职工或其近亲属、工会组织可在1年内直接申请。"
+    },
+    {
+      "id": "N050",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "用人单位不办理社会保险登记又不缴纳社保费，会被怎么处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "社会保险费征缴暂行条例.md",
+        "中华人民共和国社会保险法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "社会保险费征缴暂行条例.md",
+          "text": "第二十三条 缴费单位未按照规定办理社会保险登记、变更登记或者注销登记，"
+        },
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第八十四条 用人单位不办理社会保险登记的，由社会保险行政部门责令限期改正；逾期不改正的，"
+        }
+      ],
+      "reference_answer": "由社会保险行政部门责令限期改正；逾期不改正的，对用人单位处应缴社会保险费数额1倍以上3倍以下的罚款。"
+    },
+    {
+      "id": "N051",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "被派遣劳动者在用工单位发生工伤，由谁负责申请工伤认定、由谁承担工伤保险责任？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳务派遣暂行规定.md",
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳务派遣暂行规定.md",
+          "text": "第十条 被派遣劳动者在用工单位因工作遭受事故伤害的，劳务派遣单位应当依法申请工伤认定，"
+        },
+        {
+          "source": "工伤保险条例.md",
+          "text": "第十七条 职工发生事故伤害或者按照职业病防治法规定被诊断、鉴定为职业病，"
+        }
+      ],
+      "reference_answer": "由劳务派遣单位依法申请工伤认定并承担工伤保险责任，用工单位协助调查核实，双方可约定补偿办法。"
+    },
+    {
+      "id": "N052",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "职工失业后领取失业保险金需要什么条件？最长能领多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国社会保险法.md",
+        "失业保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第四十五条 失业人员符合下列条件的，从失业保险基金中领取失业保险金：\n\n（一）失业前用人单位和本人已经缴纳失业保"
+        },
+        {
+          "source": "失业保险条例.md",
+          "text": "第十七条 失业人员失业前所在单位和本人按照规定累计缴费时间满1年不足5年的，"
+        }
+      ],
+      "reference_answer": "需缴费满1年、非因本人意愿中断就业并办理失业登记；累计缴费10年以上的，领取期限最长为24个月。"
+    },
+    {
+      "id": "N053",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "新员工入职后，办理社保登记和申报缴费分别有什么时限要求？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "中华人民共和国社会保险法.md",
+        "社会保险费征缴暂行条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "中华人民共和国社会保险法.md",
+          "text": "第五十八条 用人单位应当自用工之日起三十日内为其职工向社会保险经办机构申请办理社会保险登记。"
+        },
+        {
+          "source": "社会保险费征缴暂行条例.md",
+          "text": "第十条 缴费单位必须按月向社会保险经办机构申报应缴纳的社会保险费数额，经社会保险经办机构核定后，"
+        }
+      ],
+      "reference_answer": "用人单位应自用工之日起30日内办理社会保险登记，并必须按月向社会保险经办机构申报应缴纳的社会保险费数额。"
+    },
+    {
+      "id": "N054",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "失业保险费由单位和个人各按什么比例缴纳？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "失业保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "失业保险条例.md",
+          "text": "第六条 城镇企业事业单位按照本单位工资总额的百分之二缴纳失业保险费。"
+        }
+      ],
+      "reference_answer": "城镇企业事业单位按本单位工资总额的2%缴纳，职工按本人工资的1%缴纳。"
+    },
+    {
+      "id": "N055",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "单位没参加工伤保险，职工发生工伤，待遇由谁承担？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工伤保险条例.md",
+          "text": "第六十二条 用人单位依照本条例规定应当参加工伤保险而未参加的，由社会保险行政部门责令限期参加，"
+        }
+      ],
+      "reference_answer": "由该用人单位按照工伤保险条例规定的工伤保险待遇项目和标准支付费用。"
+    },
+    {
+      "id": "N056",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "经营劳务派遣业务，注册资本最低要多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳务派遣行政许可实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳务派遣行政许可实施办法.md",
+          "text": "第七条 申请经营劳务派遣业务应当具备下列条件：\n\n（一）注册资本不得少于人民币200万元；\n\n（二）有与开展业务"
+        }
+      ],
+      "reference_answer": "注册资本不得少于人民币200万元。"
+    },
+    {
+      "id": "N057",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "累计工作满15年的职工，每年年休假多少天？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "职工带薪年休假条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "职工带薪年休假条例.md",
+          "text": "第三条 职工累计工作已满1年不满10年的，年休假5天；已满10年不满20年的，年休假10天；已满20年的，"
+        }
+      ],
+      "reference_answer": "累计工作已满10年不满20年的，年休假10天。"
+    },
+    {
+      "id": "N058",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "累计缴费8年的失业人员，最长能领几个月失业保险金？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "失业保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "失业保险条例.md",
+          "text": "第十七条 失业人员失业前所在单位和本人按照规定累计缴费时间满1年不足5年的，"
+        }
+      ],
+      "reference_answer": "累计缴费满5年不足10年的，领取失业保险金的期限最长为18个月。"
+    },
+    {
+      "id": "N059",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "职工和单位的住房公积金缴存比例最低是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "住房公积金管理条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "住房公积金管理条例.md",
+          "text": "第十八条 职工和单位住房公积金的缴存比例均不得低于职工上一年度月平均工资的5％，不得高于国家规定的最高缴存比例。"
+        }
+      ],
+      "reference_answer": "职工和单位住房公积金的缴存比例均不得低于职工上一年度月平均工资的5%。"
+    },
+    {
+      "id": "N060",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "日最高气温39℃时，室外露天作业累计不得超过几小时？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "防暑降温措施管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "防暑降温措施管理办法.md",
+          "text": "第八条 在高温天气期间，用人单位应当按照下列规定，根据生产特点和具体条件，"
+        }
+      ],
+      "reference_answer": "日最高气温达到37℃以上、40℃以下时，室外露天作业时间累计不得超过6小时。"
+    },
+    {
+      "id": "N061",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "医院手术中把纱布留在病人体内，能赔多少钱？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N062",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "2026年个人所得税专项附加扣除中子女教育每月扣多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N063",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "醉驾被查，血液酒精含量120mg/100ml会判多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N064",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "别人抢注了我的商标，我能要求赔偿多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N065",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "离婚时房子是婚前一方买的，婚后共同还贷怎么分？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N066",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "开车撞人后逃逸，交强险还赔吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N067",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "虚开增值税专用发票会被判几年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N068",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "父母去世没留遗嘱，房产继承公证怎么办？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N069",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "被电信诈骗了30万，报案后能追回来吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N070",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "公司上市IPO需要满足哪些财务条件？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题超出劳动法律法规语料范围，无法依据现有文档回答。"
+    },
+    {
+      "id": "N071",
+      "category": "single_point",
+      "answerable": true,
+      "query": "我在北京上班，公司规定一个季度发一次工资，这合法吗？至少多久得发一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "北京市工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "北京市工资支付规定.md",
+          "text": "用人单位应当至少每月向劳动者支付一次工资。"
+        }
+      ],
+      "reference_answer": "不合法。北京规定用人单位至少每月向劳动者支付一次工资，并按约定日期足额支付。"
+    },
+    {
+      "id": "N072",
+      "category": "single_point",
+      "answerable": true,
+      "query": "我们北京的公司因为订单少了停工两个多月，也没安排我干活，这期间工资怎么发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "北京市工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "北京市工资支付规定.md",
+          "text": "应当按照不低于本市最低工资标准的70%支付劳动者基本生活费。"
+        }
+      ],
+      "reference_answer": "停工超过一个工资支付周期且未安排工作的，北京按不低于本市最低工资标准的70%支付基本生活费。"
+    },
+    {
+      "id": "N073",
+      "category": "single_point",
+      "answerable": true,
+      "query": "天津的公司在劳动合同里写三个月发一次工资，这允许吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "天津市工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "天津市工资支付规定.md",
+          "text": "用人单位应当至少一个月支付一次工资"
+        }
+      ],
+      "reference_answer": "不允许。天津规定用人单位应当至少一个月支付一次工资。"
+    },
+    {
+      "id": "N074",
+      "category": "single_point",
+      "answerable": true,
+      "query": "天津公司每月从工资里扣个税、社保、公积金和法院判的抚养费，这些代扣项目合法吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "天津市工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "天津市工资支付规定.md",
+          "text": "在劳动关系存续期间，用人单位应从劳动者工资中代扣、代缴以下费用："
+        }
+      ],
+      "reference_answer": "合法。天津规定可代扣代缴个人所得税、社会保险费、住房公积金及法院判决的抚养费、赡养费等。"
+    },
+    {
+      "id": "N075",
+      "category": "single_point",
+      "answerable": true,
+      "query": "河北的员工请病假，公司发的病假工资最低不能低于什么标准？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河北省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河北省工资支付规定.md",
+          "text": "病假工资或者疾病救济费不得低于当地最低工资标准的百分之八十。"
+        }
+      ],
+      "reference_answer": "河北规定病假工资或疾病救济费不得低于当地最低工资标准的80%。"
+    },
+    {
+      "id": "N076",
+      "category": "single_point",
+      "answerable": true,
+      "query": "河北的工厂因非员工原因停工一个多月，员工没活干，生活费按什么标准发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河北省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河北省工资支付规定.md",
+          "text": "生活费标准为当地最低工资标准的百分之八十。"
+        }
+      ],
+      "reference_answer": "河北规定非本人原因停工一个月以上的，按当地最低工资标准的80%支付生活费。"
+    },
+    {
+      "id": "N077",
+      "category": "single_point",
+      "answerable": true,
+      "query": "山西的工程项目建设单位给农民工工资专用账户拨人工费，最晚多久要拨一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山西省保障农民工工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山西省保障农民工工资支付办法.md",
+          "text": "拨付周期不得超过1个月。"
+        }
+      ],
+      "reference_answer": "山西规定建设单位向农民工工资专用账户拨付人工费用的周期不得超过1个月。"
+    },
+    {
+      "id": "N078",
+      "category": "single_point",
+      "answerable": true,
+      "query": "山西的施工总承包单位给农民工发工资，必须走什么渠道、多久发一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山西省保障农民工工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山西省保障农民工工资支付办法.md",
+          "text": "按月通过农民工工资专用账户直接将工资拨付至农民工本人的银行账户。"
+        }
+      ],
+      "reference_answer": "山西要求施工总承包单位按月通过农民工工资专用账户把工资直接拨到农民工本人银行账户。"
+    },
+    {
+      "id": "N079",
+      "category": "single_point",
+      "answerable": true,
+      "query": "内蒙古的企业，工资支付台账至少要保存几年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "内蒙古自治区劳动者工资保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "内蒙古自治区劳动者工资保障规定.md",
+          "text": "工资支付台账应当至少保存2年。"
+        }
+      ],
+      "reference_answer": "内蒙古规定工资支付台账应当至少保存2年。"
+    },
+    {
+      "id": "N080",
+      "category": "single_point",
+      "answerable": true,
+      "query": "辽宁的公司因员工造成损失每月扣工资，最多能扣当月工资的多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "辽宁省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "辽宁省工资支付规定.md",
+          "text": "每月扣除的部分，不得超过劳动者当月工资的20％；"
+        }
+      ],
+      "reference_answer": "辽宁规定每月扣除部分不得超过劳动者当月工资的20%，扣除后余额不得低于当地最低工资标准。"
+    },
+    {
+      "id": "N081",
+      "category": "single_point",
+      "answerable": true,
+      "query": "吉林的企业工资支付周期最长为多久？能不能按季度发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "吉林省企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "吉林省企业工资支付办法.md",
+          "text": "工资支付周期最长不得超过一个月。"
+        }
+      ],
+      "reference_answer": "吉林规定工资支付周期最长不得超过一个月，不能按季度发。"
+    },
+    {
+      "id": "N082",
+      "category": "single_point",
+      "answerable": true,
+      "query": "吉林的非全日制小时工，工资支付周期最长是多少天？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "吉林省企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "吉林省企业工资支付办法.md",
+          "text": "支付周期最长不得超过15日。"
+        }
+      ],
+      "reference_answer": "吉林规定非全日制用工工资支付周期最长不得超过15日。"
+    },
+    {
+      "id": "N083",
+      "category": "single_point",
+      "answerable": true,
+      "query": "黑龙江的建筑工程，建设单位要按什么比例交农民工工资保障金？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "黑龙江省农民工工资保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "黑龙江省农民工工资保障规定.md",
+          "text": "按照工程合同价款的百分之三向劳动和社会保障行政部门交纳工资保障金。"
+        }
+      ],
+      "reference_answer": "黑龙江规定建设单位按工程合同价款的3%交纳农民工工资保障金。"
+    },
+    {
+      "id": "N084",
+      "category": "single_point",
+      "answerable": true,
+      "query": "浙江的企业工资至少多久发一次？非全日制用工的支付周期有什么限制？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "浙江省企业工资支付管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "浙江省企业工资支付管理办法.md",
+          "text": "工资应当至少每月支付一次，"
+        },
+        {
+          "source": "浙江省企业工资支付管理办法.md",
+          "text": "非全日制用工工资支付周期最长不得超过15日。"
+        }
+      ],
+      "reference_answer": "浙江规定工资至少每月支付一次，非全日制用工支付周期最长不得超过15日。"
+    },
+    {
+      "id": "N085",
+      "category": "single_point",
+      "answerable": true,
+      "query": "安徽的公司注册地和劳动合同履行地最低工资标准不一样，按哪个标准执行？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "安徽省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "安徽省工资支付规定.md",
+          "text": "劳动合同履行地与用人单位所在地的最低工资标准不一致的，适用有利于劳动者的标准。"
+        }
+      ],
+      "reference_answer": "安徽规定劳动合同履行地与单位所在地最低工资标准不一致时，适用有利于劳动者的标准。"
+    },
+    {
+      "id": "N086",
+      "category": "single_point",
+      "answerable": true,
+      "query": "江西的劳动合同没写几号发工资，发薪日正好赶上法定节假日，该怎么办？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江西省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江西省工资支付规定.md",
+          "text": "工资支付日期遇法定休假日或者休息日的，应当提前在前一个工作日支付。"
+        }
+      ],
+      "reference_answer": "江西规定未约定支付日期的按单位规定日期支付；遇法定休假日或休息日应提前在前一个工作日支付。"
+    },
+    {
+      "id": "N087",
+      "category": "single_point",
+      "answerable": true,
+      "query": "山东的企业，工资支付表按会计档案要求至少要保存多少年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山东省企业工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山东省企业工资支付规定.md",
+          "text": "工资支付表应当按照国家会计档案管理的规定至少保存15年的时间备查。"
+        }
+      ],
+      "reference_answer": "山东规定企业工资支付表至少保存15年备查。"
+    },
+    {
+      "id": "N088",
+      "category": "single_point",
+      "answerable": true,
+      "query": "河南的非全日制用工，工资支付周期最长不得超过多少天？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河南省最低工资规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河南省最低工资规定.md",
+          "text": "支付周期最长不得超过15日。"
+        }
+      ],
+      "reference_answer": "河南规定非全日制用工工资支付周期最长不得超过15日。"
+    },
+    {
+      "id": "N089",
+      "category": "single_point",
+      "answerable": true,
+      "query": "湖北的企业可以自己改工资支付台账来应付检查吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖北省保障农民工工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖北省保障农民工工资支付办法.md",
+          "text": "不得伪造、变造、隐瞒、藏匿。"
+        }
+      ],
+      "reference_answer": "不可以。湖北规定用人单位应依法建立工资支付台账，不得伪造、变造、隐瞒、藏匿。"
+    },
+    {
+      "id": "N090",
+      "category": "single_point",
+      "answerable": true,
+      "query": "湖南的公司能不能两个月发一次工资？至少多久发一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖南省工资支付监督管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖南省工资支付监督管理办法.md",
+          "text": "用人单位应当至少每月向劳动者支付一次工资。"
+        }
+      ],
+      "reference_answer": "湖南规定用人单位应当至少每月向劳动者支付一次工资。"
+    },
+    {
+      "id": "N091",
+      "category": "single_point",
+      "answerable": true,
+      "query": "广东的员工弄坏设备，公司直接从工资里扣赔偿费但没提前通知，这样做合法吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工资支付条例.md",
+          "text": "应当提前书面告知扣除原因及数额；"
+        }
+      ],
+      "reference_answer": "不合法。广东规定因劳动者过错扣赔偿费应提前书面告知原因及数额，未告知不得扣除。"
+    },
+    {
+      "id": "N092",
+      "category": "single_point",
+      "answerable": true,
+      "query": "广西的一次性临时活干完了，最晚几天内必须结清工资？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广西壮族自治区工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广西壮族自治区工资支付暂行规定.md",
+          "text": "用人单位应当在完成劳动任务后3日内支付。"
+        }
+      ],
+      "reference_answer": "广西规定一次性临时劳动，用人单位应在完成劳动任务后3日内支付工资。"
+    },
+    {
+      "id": "N093",
+      "category": "single_point",
+      "answerable": true,
+      "query": "海南海口的全日制员工，月最低工资标准是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "海南省关于调整全省最低工资标准的通知.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "海南省关于调整全省最低工资标准的通知.md",
+          "text": "一类地区月最低工资标准为2250元，小时最低工资标准为20.0元"
+        }
+      ],
+      "reference_answer": "海南一类地区（海口、三亚、儋州、三沙）月最低工资标准为2250元，小时标准为20.0元。"
+    },
+    {
+      "id": "N094",
+      "category": "single_point",
+      "answerable": true,
+      "query": "重庆的最低工资标准一般什么时候确定或调整？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "重庆市最低工资保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "重庆市最低工资保障规定.md",
+          "text": "最低工资标准每年7月1日前确定或调整一次。"
+        }
+      ],
+      "reference_answer": "重庆规定最低工资标准每年7月1日前确定或调整一次。"
+    },
+    {
+      "id": "N095",
+      "category": "single_point",
+      "answerable": true,
+      "query": "四川实行计件工资的，最低工资标准怎么计算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "四川省最低工资保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "四川省最低工资保障规定.md",
+          "text": "最低工资标准按月、日计算。"
+        },
+        {
+          "source": "四川省最低工资保障规定.md",
+          "text": "应当按照不低于月、日最低工资标准额进行折算。"
+        }
+      ],
+      "reference_answer": "四川规定最低工资标准按月、日计算，计件或提成工资应按不低于月、日最低工资标准额折算。"
+    },
+    {
+      "id": "N096",
+      "category": "single_point",
+      "answerable": true,
+      "query": "贵州工程建设项目的人工费用结算周期最长是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "贵州省贯彻落实保障农民工工资支付条例实施意见.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "贵州省贯彻落实保障农民工工资支付条例实施意见.md",
+          "text": "规定人工费用结算周期不超过1个月"
+        }
+      ],
+      "reference_answer": "贵州规定工程建设项目人工费用结算周期不超过1个月。"
+    },
+    {
+      "id": "N097",
+      "category": "single_point",
+      "answerable": true,
+      "query": "云南的用人单位，农民工实名工资支付表至少要保存几年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "云南省农民工工资支付保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "云南省农民工工资支付保障规定.md",
+          "text": "工资支付表至少保存3年。"
+        }
+      ],
+      "reference_answer": "云南规定农民工实名工资支付表至少保存3年。"
+    },
+    {
+      "id": "N098",
+      "category": "single_point",
+      "answerable": true,
+      "query": "云南的施工企业交农民工工资保证金，按什么比例存储？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "云南省农民工工资支付保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "云南省农民工工资支付保障规定.md",
+          "text": "农民工工资保证金按工程施工合同额(或年度合同额)的3%存储。"
+        }
+      ],
+      "reference_answer": "云南规定农民工工资保证金按工程施工合同额（或年度合同额）的3%存储。"
+    },
+    {
+      "id": "N099",
+      "category": "single_point",
+      "answerable": true,
+      "query": "陕西的厂子停工超过一个支付周期又没安排工作，生活费按什么标准发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "陕西省企业工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "陕西省企业工资支付条例.md",
+          "text": "应当按照不低于当地最低工资标准的75%支付劳动者生活费。"
+        }
+      ],
+      "reference_answer": "陕西规定停工停业超过一个工资支付周期且未安排工作的，按不低于当地最低工资标准的75%支付生活费。"
+    },
+    {
+      "id": "N100",
+      "category": "single_point",
+      "answerable": true,
+      "query": "厦门的企业经营困难，工资最多能延期多久发放？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "厦门市企业工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "厦门市企业工资支付条例.md",
+          "text": "延期最长不得超过三十日"
+        }
+      ],
+      "reference_answer": "厦门规定因经营困难可协商延期支付工资，最长不得超过30日，并应在协议达成后3日内备案。"
+    },
+    {
+      "id": "N101",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我在上海工作，公司注册在江苏，劳动合同没约定月工资，加班费基数按什么算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市企业工资支付办法.md",
+          "text": "按劳动者正常出勤月依照本办法第二条规定的工资（不包括加班工资）的70%确定。"
+        }
+      ],
+      "reference_answer": "上海规定劳动合同、集体合同均未约定月工资的，加班工资基数按正常出勤月工资（不含加班工资）的70%确定。"
+    },
+    {
+      "id": "N102",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我在上海工作，老家在安徽，公司说资金周转困难，工资要拖两个月，最多能拖多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市企业工资支付办法.md",
+          "text": "可以延期在一个月内支付劳动者工资，"
+        }
+      ],
+      "reference_answer": "上海规定经营困难经与工会或职工代表协商一致，可延期在一个月内支付工资。"
+    },
+    {
+      "id": "N103",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我从浙江跳槽到上海，还在试用期，公司按转正后工资的八成发，对吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市企业工资支付办法.md",
+          "text": "不得低于劳动合同约定工资的80%，"
+        }
+      ],
+      "reference_answer": "上海规定试用期工资不得低于本单位同岗位最低档工资或劳动合同约定工资的80%，且不低于最低工资标准。"
+    },
+    {
+      "id": "N104",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是河北沧州人，在天津一家公司上班，公司两三个月才发一次工资，行吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "天津市工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "天津市工资支付规定.md",
+          "text": "用人单位应当至少一个月支付一次工资"
+        }
+      ],
+      "reference_answer": "不行。天津规定用人单位应当至少一个月支付一次工资。"
+    },
+    {
+      "id": "N105",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我在上海入职后被派到天津分公司，天津公司从工资里扣了个税、社保、公积金和法院判的抚养费，这些都能代扣吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "天津市工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "天津市工资支付规定.md",
+          "text": "在劳动关系存续期间，用人单位应从劳动者工资中代扣、代缴以下费用："
+        }
+      ],
+      "reference_answer": "可以。天津规定可代扣代缴个人所得税、社会保险费、住房公积金及法院判决的抚养费、赡养费等。"
+    },
+    {
+      "id": "N106",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我在北京参保，被派到河北的项目上，请病假时病假工资最低按什么标准？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河北省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河北省工资支付规定.md",
+          "text": "病假工资或者疾病救济费不得低于当地最低工资标准的百分之八十。"
+        }
+      ],
+      "reference_answer": "河北规定病假工资或疾病救济费不得低于当地最低工资标准的80%。"
+    },
+    {
+      "id": "N107",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是山西大同人，在呼和浩特开了家小公司，工资台账要保存多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "内蒙古自治区劳动者工资保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "内蒙古自治区劳动者工资保障规定.md",
+          "text": "工资支付台账应当至少保存2年。"
+        }
+      ],
+      "reference_answer": "内蒙古规定工资支付台账应当至少保存2年。"
+    },
+    {
+      "id": "N108",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "吉林的公司把我调到沈阳工作，因我损坏设备每月扣工资，最多能扣多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "辽宁省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "辽宁省工资支付规定.md",
+          "text": "每月扣除的部分，不得超过劳动者当月工资的20％；"
+        }
+      ],
+      "reference_answer": "辽宁规定每月扣除部分不得超过劳动者当月工资的20%，扣除后余额不得低于当地最低工资标准。"
+    },
+    {
+      "id": "N109",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是辽宁沈阳人，在长春上班，公司说按季度发工资，最长多久必须发一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "吉林省企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "吉林省企业工资支付办法.md",
+          "text": "工资支付周期最长不得超过一个月。"
+        }
+      ],
+      "reference_answer": "吉林规定工资支付周期最长不得超过一个月，不能按季度发。"
+    },
+    {
+      "id": "N110",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是黑龙江哈尔滨人，在吉林做兼职小时工，工资多久必须结一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "吉林省企业工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "吉林省企业工资支付办法.md",
+          "text": "支付周期最长不得超过15日。"
+        }
+      ],
+      "reference_answer": "吉林规定非全日制用工工资支付周期最长不得超过15日。"
+    },
+    {
+      "id": "N111",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "辽宁的施工队到黑龙江接工程，农民工工资保障金按什么比例交？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "黑龙江省农民工工资保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "黑龙江省农民工工资保障规定.md",
+          "text": "按照工程合同价款的百分之三向劳动和社会保障行政部门交纳工资保障金。"
+        }
+      ],
+      "reference_answer": "黑龙江规定建设单位领取施工许可证前按工程合同价款的3%交纳工资保障金。"
+    },
+    {
+      "id": "N112",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是江苏苏州人，在杭州上班请病假，病假工资最低按多少发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "浙江省企业工资支付管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "浙江省企业工资支付管理办法.md",
+          "text": "病伤假工资不得低于当地人民政府确定的最低工资标准的80%。"
+        }
+      ],
+      "reference_answer": "浙江规定病伤假工资不得低于当地人民政府确定的最低工资标准的80%。"
+    },
+    {
+      "id": "N113",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是安徽人，在宁波做非全日制保洁，工资支付周期最长多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "浙江省企业工资支付管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "浙江省企业工资支付管理办法.md",
+          "text": "非全日制用工工资支付周期最长不得超过15日。"
+        }
+      ],
+      "reference_answer": "浙江规定非全日制用工工资支付周期最长不得超过15日。"
+    },
+    {
+      "id": "N114",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "公司注册在江苏南京，我实际在合肥上班，两地最低工资标准不一样，按哪个执行？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "安徽省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "安徽省工资支付规定.md",
+          "text": "劳动合同履行地与用人单位所在地的最低工资标准不一致的，适用有利于劳动者的标准。"
+        }
+      ],
+      "reference_answer": "安徽规定合同履行地与单位所在地最低工资标准不一致时，适用有利于劳动者的标准。"
+    },
+    {
+      "id": "N115",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是湖南人，在南昌上班，合同没写几号发工资，发薪日赶上节假日怎么办？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江西省工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江西省工资支付规定.md",
+          "text": "工资支付日期遇法定休假日或者休息日的，应当提前在前一个工作日支付。"
+        }
+      ],
+      "reference_answer": "江西规定工资支付日期遇法定休假日或休息日的，应提前在前一个工作日支付。"
+    },
+    {
+      "id": "N116",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是河北人，在青岛开公司，工资支付表要保存多少年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山东省企业工资支付规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山东省企业工资支付规定.md",
+          "text": "工资支付表应当按照国家会计档案管理的规定至少保存15年的时间备查。"
+        }
+      ],
+      "reference_answer": "山东规定工资支付表按会计档案管理规定至少保存15年备查。"
+    },
+    {
+      "id": "N117",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是湖北人，在郑州做兼职，非全日制工资可以一个月结一次吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河南省最低工资规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河南省最低工资规定.md",
+          "text": "支付周期最长不得超过15日。"
+        }
+      ],
+      "reference_answer": "不可以。河南规定非全日制用工工资支付周期最长不得超过15日。"
+    },
+    {
+      "id": "N118",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是河南信阳人，在武汉工地干活，老板说工资台账可以自己改，行吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖北省保障农民工工资支付办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖北省保障农民工工资支付办法.md",
+          "text": "不得伪造、变造、隐瞒、藏匿。"
+        }
+      ],
+      "reference_answer": "不行。湖北规定工资支付台账不得伪造、变造、隐瞒、藏匿，并应向农民工提供一致的工资清单。"
+    },
+    {
+      "id": "N119",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是江西萍乡人，在长沙做年薪制管理岗，平时不发工资、年底一次结清行吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖南省工资支付监督管理办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖南省工资支付监督管理办法.md",
+          "text": "每月按不低于当地最低工资标准预付工资，"
+        }
+      ],
+      "reference_answer": "不行。湖南规定年薪制或按考核周期支付工资的，应每月按不低于当地最低工资标准预付，期满结算。"
+    },
+    {
+      "id": "N120",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是广西人，在广州上班弄坏设备被扣工资，公司没提前书面通知就扣了，合法吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工资支付条例.md",
+          "text": "应当提前书面告知扣除原因及数额；"
+        }
+      ],
+      "reference_answer": "不合法。广东规定因劳动者过错扣赔偿费应提前书面告知原因及数额，未书面告知不得扣除。"
+    },
+    {
+      "id": "N121",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是广东湛江人，在南宁接了个一次性临时活，完工后多久必须结钱？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广西壮族自治区工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广西壮族自治区工资支付暂行规定.md",
+          "text": "用人单位应当在完成劳动任务后3日内支付。"
+        }
+      ],
+      "reference_answer": "广西规定一次性临时劳动，用人单位应在完成劳动任务后3日内支付工资。"
+    },
+    {
+      "id": "N122",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是四川人，在重庆上班，重庆的最低工资标准多久调整一次？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "重庆市最低工资保障规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "重庆市最低工资保障规定.md",
+          "text": "最低工资标准每年7月1日前确定或调整一次。"
+        }
+      ],
+      "reference_answer": "重庆规定最低工资标准每年7月1日前确定或调整一次。"
+    },
+    {
+      "id": "N123",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是山西运城人，在西安的厂子停工两个月没安排活，生活费按什么标准？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "陕西省企业工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "陕西省企业工资支付条例.md",
+          "text": "应当按照不低于当地最低工资标准的75%支付劳动者生活费。"
+        }
+      ],
+      "reference_answer": "陕西规定停工停业超过一个工资支付周期且未安排工作的，按不低于当地最低工资标准的75%支付生活费。"
+    },
+    {
+      "id": "N124",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是泉州人，在厦门上班，公司说经营困难要晚点发工资，最多能拖多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "厦门市企业工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "厦门市企业工资支付条例.md",
+          "text": "延期最长不得超过三十日"
+        }
+      ],
+      "reference_answer": "厦门规定确因经营困难可协商延期支付工资，最长不得超过30日，并应在协议达成后3日内备案。"
+    },
+    {
+      "id": "N125",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是苏州人，到无锡开厂，工资集体协商多久进行一次、协议能管几年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "无锡市企业工资集体协商条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "无锡市企业工资集体协商条例.md",
+          "text": "工资协商每年一次，"
+        },
+        {
+          "source": "无锡市企业工资集体协商条例.md",
+          "text": "但不超过三年。"
+        }
+      ],
+      "reference_answer": "无锡规定工资协商每年一次，经双方同意可延长协商周期但不超过三年。"
+    },
+    {
+      "id": "N126",
+      "category": "hard_negative_region",
+      "answerable": true,
+      "query": "我是云南昭通人，在贵阳的工程项目做分包，人工费用结算周期最长多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "贵州省贯彻落实保障农民工工资支付条例实施意见.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "贵州省贯彻落实保障农民工工资支付条例实施意见.md",
+          "text": "规定人工费用结算周期不超过1个月"
+        }
+      ],
+      "reference_answer": "贵州规定工程建设项目人工费用结算周期不超过1个月。"
+    },
+    {
+      "id": "N127",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "海口的企业既有全日制员工也有非全日制员工，最低工资分别怎么适用？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "海南省关于调整全省最低工资标准的通知.md",
+        "最低工资规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "海南省关于调整全省最低工资标准的通知.md",
+          "text": "一类地区月最低工资标准为2250元，小时最低工资标准为20.0元"
+        },
+        {
+          "source": "最低工资规定.md",
+          "text": "月最低工资标准适用于全日制就业劳动者，小时最低工资标准适用于非全日制就业劳动者。"
+        }
+      ],
+      "reference_answer": "海口全日制适用一类地区月最低工资2250元，非全日制适用小时最低工资20.0元。"
+    },
+    {
+      "id": "N128",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "河南的最低工资标准里，加班费和夜班高温津贴算不算在内？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河南省最低工资规定.md",
+        "最低工资规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河南省最低工资规定.md",
+          "text": "用人单位支付给劳动者的最低工资不包括下列各项:"
+        },
+        {
+          "source": "最低工资规定.md",
+          "text": "用人单位应支付给劳动者的工资在剔除下列各项以后，不得低于当地最低工资标准："
+        }
+      ],
+      "reference_answer": "河南规定最低工资不包括加班加点工资、特殊环境津贴等；国家规定剔除这些项目后不得低于当地最低工资标准。"
+    },
+    {
+      "id": "N129",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "重庆的最低工资标准多久调一次？国家层面对调整频率有什么要求？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "重庆市最低工资保障规定.md",
+        "最低工资规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "重庆市最低工资保障规定.md",
+          "text": "最低工资标准每年7月1日前确定或调整一次。"
+        },
+        {
+          "source": "最低工资规定.md",
+          "text": "最低工资标准每两年至少调整一次。"
+        }
+      ],
+      "reference_answer": "重庆规定每年7月1日前确定或调整一次；国家规定最低工资标准每两年至少调整一次。"
+    },
+    {
+      "id": "N130",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "云南的施工项目要交农民工工资保证金吗？按什么比例、能不能用保函替代？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "云南省农民工工资支付保障规定.md",
+        "保障农民工工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "云南省农民工工资支付保障规定.md",
+          "text": "农民工工资保证金按工程施工合同额(或年度合同额)的3%存储。"
+        },
+        {
+          "source": "保障农民工工资支付条例.md",
+          "text": "工资保证金可以用金融机构保函替代。"
+        }
+      ],
+      "reference_answer": "云南按施工合同额（或年度合同额）的3%存储农民工工资保证金，可用金融机构保函替代。"
+    },
+    {
+      "id": "N131",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "山西的工程项目建设单位向农民工工资专户拨人工费，最晚多久拨一次、要拨到哪里？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山西省保障农民工工资支付办法.md",
+        "保障农民工工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山西省保障农民工工资支付办法.md",
+          "text": "拨付周期不得超过1个月。"
+        },
+        {
+          "source": "保障农民工工资支付条例.md",
+          "text": "将人工费用及时足额拨付至农民工工资专用账户，"
+        }
+      ],
+      "reference_answer": "山西规定拨付周期不得超过1个月；国家规定建设单位应将人工费用及时足额拨付至农民工工资专用账户。"
+    },
+    {
+      "id": "N132",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "湖北的工地招用农民工，要不要实名登记？工资台账和工资清单怎么处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖北省保障农民工工资支付办法.md",
+        "保障农民工工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖北省保障农民工工资支付办法.md",
+          "text": "用人单位支付工资时，应当向农民工提供与工资支付台账一致的工资清单。"
+        },
+        {
+          "source": "保障农民工工资支付条例.md",
+          "text": "用人单位实行农民工劳动用工实名制管理"
+        }
+      ],
+      "reference_answer": "湖北要求建立工资支付台账并提供一致清单；国家规定用人单位实行农民工劳动用工实名制管理。"
+    },
+    {
+      "id": "N133",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "贵州工程项目的分包单位，农民工工资表多久做一次、由谁代发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "贵州省贯彻落实保障农民工工资支付条例实施意见.md",
+        "保障农民工工资支付条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "贵州省贯彻落实保障农民工工资支付条例实施意见.md",
+          "text": "规定人工费用结算周期不超过1个月，"
+        },
+        {
+          "source": "保障农民工工资支付条例.md",
+          "text": "分包单位应当按月考核农民工工作量并编制工资支付表，"
+        }
+      ],
+      "reference_answer": "贵州规定人工费用结算周期不超过1个月；国家规定分包单位按月考核工作量并编制工资支付表，由总承包单位代发。"
+    },
+    {
+      "id": "N134",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "员工被派到美国加州工作，美国的最低工资标准是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及美国最低工资标准的内容，无法回答。"
+    },
+    {
+      "id": "N135",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "新加坡的雇主要辞退员工，按新加坡法律要支付多少赔偿？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及新加坡解雇赔偿的内容，无法回答。"
+    },
+    {
+      "id": "N136",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "公司想了解2025年小型微利企业所得税优惠税率是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及企业所得税税率的内容，无法回答。"
+    },
+    {
+      "id": "N137",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "个人所得税专项附加扣除中，子女教育每月可以扣除多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及个人所得税专项附加扣除的内容，无法回答。"
+    },
+    {
+      "id": "N138",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "老板拖欠工资20万元后跑路，构成拒不支付劳动报酬罪会判几年？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及拒不支付劳动报酬罪量刑的内容，无法回答。"
+    },
+    {
+      "id": "N139",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "员工涉嫌职务侵占，公司报案后公安机关多久立案？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及刑事立案程序的内容，无法回答。"
+    },
+    {
+      "id": "N140",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "住房公积金贷款最高可以贷多少万元？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及住房公积金贷款额度的内容，无法回答。"
+    },
+    {
+      "id": "N141",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "夫妻离婚时房产应该如何分割？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及离婚房产分割的内容，无法回答。"
+    },
+    {
+      "id": "N142",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "员工下班骑电动车被闯红灯的汽车撞伤，交强险能赔多少钱？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及交强险赔付标准的内容，无法回答。"
+    },
+    {
+      "id": "N143",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "公司准备在香港上市，需要满足哪些条件？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及香港上市条件的内容，无法回答。"
+    },
+    {
+      "id": "N144",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "员工申请美国H-1B工作签证需要准备哪些材料？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及美国工作签证的内容，无法回答。"
+    },
+    {
+      "id": "N145",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "公司股东分红需要缴纳多少个人所得税？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库中没有涉及股东分红个税的内容，无法回答。"
+    },
+    {
+      "id": "N146",
+      "category": "single_point",
+      "answerable": true,
+      "query": "北京这边工伤职工跟单位解除劳动关系后，一次性伤残就业补助金该由谁支付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "北京市实施工伤保险条例若干规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "北京市实施工伤保险条例若干规定.md",
+          "text": "《条例》的规定向该工伤职工支付一次性伤残就业补助金。"
+        }
+      ],
+      "reference_answer": "由用人单位按照《条例》规定向工伤职工支付一次性伤残就业补助金。"
+    },
+    {
+      "id": "N147",
+      "category": "single_point",
+      "answerable": true,
+      "query": "在天津，职工工伤以后哪些费用是必须由用人单位自己掏钱付的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "天津市工伤保险若干规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "天津市工伤保险若干规定.md",
+          "text": "第二十五条  因工伤发生的下列费用，由用人单位支付："
+        }
+      ],
+      "reference_answer": "停工留薪期工资福利与生活护理、五六级伤残津贴、一次性伤残就业补助金由单位支付。"
+    },
+    {
+      "id": "N148",
+      "category": "single_point",
+      "answerable": true,
+      "query": "河北的社会保险费缴费基数是由哪个部门核定的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河北省社会保险费征缴暂行办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河北省社会保险费征缴暂行办法.md",
+          "text": "第三条 县级以上人力资源社会保障行政部门负责本行政区域内社会保险费的征缴管理和监督检查工作。人力资源社会保障行"
+        }
+      ],
+      "reference_answer": "由人力资源社会保障行政部门的社会保险经办机构负责缴费基数核定和稽核。"
+    },
+    {
+      "id": "N149",
+      "category": "single_point",
+      "answerable": true,
+      "query": "山西五级到十级工伤职工解除劳动关系时，一次性工伤医疗补助金和就业补助金分别由谁出？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山西省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山西省实施工伤保险条例办法.md",
+          "text": "第二十九条 职工因工致残被鉴定为五级至十级伤残的，依照《工伤保险条例》第三十六条、第三十七条规定，与用人单位解"
+        }
+      ],
+      "reference_answer": "医疗补助金由经办机构从工伤保险基金支付，伤残就业补助金由用人单位支付。"
+    },
+    {
+      "id": "N150",
+      "category": "single_point",
+      "answerable": true,
+      "query": "内蒙古五级伤残职工的一次性伤残补助金是几个月本人工资？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "内蒙古自治区工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "内蒙古自治区工伤保险条例实施办法.md",
+          "text": "伤残补助金，标准为：五级伤残为18个月的本人工资，六级伤残为16个月的本人工资；"
+        }
+      ],
+      "reference_answer": "五级伤残为18个月的本人工资，六级为16个月。"
+    },
+    {
+      "id": "N151",
+      "category": "single_point",
+      "answerable": true,
+      "query": "辽宁的用人单位应该到哪里去参加工伤保险？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "辽宁省工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "辽宁省工伤保险实施办法.md",
+          "text": "（二）登记注册地与生产经营地不在同一地区的，原则上在登记注册地参加工伤保险；未在登记注册地参加工伤保险的，在生"
+        }
+      ],
+      "reference_answer": "按登记注册地参加；未在注册地参保的，在生产经营地参加。"
+    },
+    {
+      "id": "N152",
+      "category": "single_point",
+      "answerable": true,
+      "query": "吉林计算工伤保险待遇时说的“本人工资”到底怎么算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "吉林省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "吉林省实施工伤保险条例办法.md",
+          "text": "本办法中计算工伤保险待遇的本人工资，是指工伤职工受到事故伤害（或诊断为职业病）或者解除劳动（人事）关系前12个"
+        }
+      ],
+      "reference_answer": "指受伤或解除关系前12个月平均缴费工资，不足12个月按实际月数平均计算。"
+    },
+    {
+      "id": "N153",
+      "category": "single_point",
+      "answerable": true,
+      "query": "黑龙江的职工发生工伤，应该向哪里的社保部门提工伤认定申请？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "黑龙江省贯彻工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "黑龙江省贯彻工伤保险条例实施办法.md",
+          "text": "第四条  用人单位参加工伤保险，职工受到事故伤害或患职业病，应当向用人单位所在地设区的市级社会保险行政部门提出"
+        }
+      ],
+      "reference_answer": "向用人单位所在地设区的市级社会保险行政部门提出工伤认定申请。"
+    },
+    {
+      "id": "N154",
+      "category": "single_point",
+      "answerable": true,
+      "query": "上海这边什么情况算视同工伤？比如工作时突发疾病死亡。",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市工伤保险实施办法.md",
+          "text": "和工作岗位，突发疾病死亡或者在48小时之内经抢救无效死亡的；"
+        }
+      ],
+      "reference_answer": "在工作时间和工作岗位突发疾病死亡或48小时内经抢救无效死亡的视同工伤。"
+    },
+    {
+      "id": "N155",
+      "category": "single_point",
+      "answerable": true,
+      "query": "江苏五级伤残的一次性工伤医疗补助金基准标准是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江苏省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江苏省实施工伤保险条例办法.md",
+          "text": "伤医疗补助金的基准标准为:五级20万元,六级16万元,七级12万元,八级8万元,九级5万元,十级3万元。一次性"
+        }
+      ],
+      "reference_answer": "五级为20万元（基准标准）。"
+    },
+    {
+      "id": "N156",
+      "category": "single_point",
+      "answerable": true,
+      "query": "浙江五级到十级工伤职工跟单位解除劳动关系后，一次性工伤医疗补助金怎么处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "浙江省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "浙江省工伤保险条例.md",
+          "text": "五级至十级工伤职工，解除或者终止劳动关系的，其一次性工伤医疗补助金和一次性伤残就业补助金，均以解除或者终止劳动"
+        }
+      ],
+      "reference_answer": "解除或终止劳动关系时，按规定支付一次性工伤医疗补助金和伤残就业补助金。"
+    },
+    {
+      "id": "N157",
+      "category": "single_point",
+      "answerable": true,
+      "query": "安徽七级到十级工伤职工合同到期终止，补助金由谁支付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "安徽省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "安徽省实施工伤保险条例办法.md",
+          "text": "同的，由工伤保险基金支付一次性工伤医疗补助金，由用人单位支付一次性伤残就业补助金。以统筹地区上年度职工月平均工"
+        }
+      ],
+      "reference_answer": "一次性工伤医疗补助金由工伤保险基金支付，一次性伤残就业补助金由用人单位支付。"
+    },
+    {
+      "id": "N158",
+      "category": "single_point",
+      "answerable": true,
+      "query": "福建的一次性工伤医疗补助金是按什么办法算出来的？好像跟别的省不一样。",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "福建省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "福建省实施工伤保险条例办法.md",
+          "text": "统筹地区最后一次公布的人口平均预期寿命与解除或者终止劳动关系时年龄之差以及解除或者终止劳动关系时统筹地区上年度"
+        }
+      ],
+      "reference_answer": "按统筹地区人口平均预期寿命与解除劳动关系时年龄之差、上年度职工月平均工资计算。"
+    },
+    {
+      "id": "N159",
+      "category": "single_point",
+      "answerable": true,
+      "query": "江西的工伤职工办完退休手续后查出职业病，还能享受哪些待遇？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江西省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江西省实施工伤保险条例办法.md",
+          "text": "第二十七条 工伤职工办理退休手续后被确诊患有职业病并认定为工伤的，依法享受工伤保险有关待遇，但不享受一次性伤残"
+        }
+      ],
+      "reference_answer": "可依法享受工伤保险待遇，但不享受一次性伤残就业补助金和一次性工伤医疗补助金。"
+    },
+    {
+      "id": "N160",
+      "category": "single_point",
+      "answerable": true,
+      "query": "山东五级伤残职工提出解除劳动合同，一次性工伤医疗补助金给多少个月？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山东省贯彻工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山东省贯彻工伤保险条例实施办法.md",
+          "text": "月平均工资为基数，分别支付本人22个月、18个月的一次性工伤医疗补助金和36个月、30个月的一次性伤残就业补助"
+        }
+      ],
+      "reference_answer": "五级为22个月、六级为18个月的一次性工伤医疗补助金。"
+    },
+    {
+      "id": "N161",
+      "category": "single_point",
+      "answerable": true,
+      "query": "河南五级到十级工伤职工解除劳动关系，两项补助金按什么基数计算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河南省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河南省工伤保险条例.md",
+          "text": "第二十七条五级至十级工伤职工按国务院《工伤保险条例》第三十四条、第三十五条规定与用人单位解除或者终止劳动关系的"
+        }
+      ],
+      "reference_answer": "以解除或终止劳动关系时统筹地区上年度职工月平均工资为基数计算。"
+    },
+    {
+      "id": "N162",
+      "category": "single_point",
+      "answerable": true,
+      "query": "湖北工伤职工领了一次性工伤医疗补助金和就业补助金以后还能再享受工伤待遇吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖北省工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖北省工伤保险实施办法.md",
+          "text": "助金和一次性伤残就业补助金后，不再享受工伤保险待遇。"
+        }
+      ],
+      "reference_answer": "领取后不再享受工伤保险待遇。"
+    },
+    {
+      "id": "N163",
+      "category": "single_point",
+      "answerable": true,
+      "query": "湖南五级到十级工伤职工距退休不到5年解除劳动关系，补助金怎么递减？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖南省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖南省实施工伤保险条例办法.md",
+          "text": "助金；不足5年的，每少一年减除20%，但最高减除额不得超过全额的90%。"
+        }
+      ],
+      "reference_answer": "距法定退休年龄不足5年的，每少一年减除20%。"
+    },
+    {
+      "id": "N164",
+      "category": "single_point",
+      "answerable": true,
+      "query": "广东的停工留薪期最长可以有多久？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工伤保险条例.md",
+          "text": "能力鉴定委员会确认，最长不超过二十四个月。"
+        }
+      ],
+      "reference_answer": "根据医疗终结期确定，由劳动能力鉴定委员会确认，最长不超过二十四个月。"
+    },
+    {
+      "id": "N165",
+      "category": "single_point",
+      "answerable": true,
+      "query": "广西五级、六级工伤职工提出解除劳动关系，一次性工伤医疗补助金由谁支付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广西壮族自治区实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广西壮族自治区实施工伤保险条例办法.md",
+          "text": "止或者本人提出解除劳动合同的,由工伤保险基金按照下列规定支付一次性工伤医疗补助金,由用人单位按照下列规定支付一"
+        }
+      ],
+      "reference_answer": "由工伤保险基金支付一次性工伤医疗补助金，用人单位支付一次性伤残就业补助金。"
+    },
+    {
+      "id": "N166",
+      "category": "single_point",
+      "answerable": true,
+      "query": "海南经济特区哪些单位必须参加工伤保险？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "海南经济特区工伤保险若干规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "海南经济特区工伤保险若干规定.md",
+          "text": "第二条 本经济特区下列用人单位应当按照本规定参加工伤保险，为本单位全部从业人员缴纳工伤保险费："
+        }
+      ],
+      "reference_answer": "各类企业、有雇工的个体工商户、国家机关事业单位社会团体等组织都应参保。"
+    },
+    {
+      "id": "N167",
+      "category": "single_point",
+      "answerable": true,
+      "query": "重庆五至十级工伤职工跟单位解除劳动关系后，工伤保险关系怎么处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "重庆市工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "重庆市工伤保险实施办法.md",
+          "text": "五至十级工伤职工本人提出与用人单位解除劳动关系或者用人单位依法解除劳动关系的，或七级至十级工伤职工劳动合同期满"
+        }
+      ],
+      "reference_answer": "自终止劳动关系之日起与经办机构工伤保险关系终止，并按规定支付相关补助金。"
+    },
+    {
+      "id": "N168",
+      "category": "single_point",
+      "answerable": true,
+      "query": "四川五级伤残职工距退休还有六年，提出解除劳动关系，一次性伤残就业补助金怎么付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "四川省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "四川省工伤保险条例.md",
+          "text": "一次性伤残就业补助金由用人单位全额支付；距法定退休年龄不足五年的，一次性伤残就业补助金按照年龄每增加一周岁递减"
+        }
+      ],
+      "reference_answer": "距法定退休年龄五年以上（含五年）的，一次性伤残就业补助金由用人单位全额支付。"
+    },
+    {
+      "id": "N169",
+      "category": "single_point",
+      "answerable": true,
+      "query": "贵州的工伤保险基金是省级统筹吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "贵州省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "贵州省工伤保险条例.md",
+          "text": "第五条 工伤保险基金实行省级统筹，具体办法由省人民政府制定。"
+        }
+      ],
+      "reference_answer": "是，工伤保险基金实行省级统筹，具体办法由省人民政府制定。"
+    },
+    {
+      "id": "N170",
+      "category": "single_point",
+      "answerable": true,
+      "query": "云南五级伤残职工单位安排不了工作，伤残津贴按什么标准发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "云南省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "云南省实施工伤保险条例办法.md",
+          "text": "第三十八条 职工因工致残被鉴定为五级、六级伤残的，保留与用人单位的劳动关系，单位应当为其安排适当工作。用人单位"
+        }
+      ],
+      "reference_answer": "由所在单位按月发给伤残津贴，并以伤残津贴为基数缴纳各项社会保险费。"
+    },
+    {
+      "id": "N171",
+      "category": "single_point",
+      "answerable": true,
+      "query": "陕西五级工伤职工提出解除劳动关系，一次性工伤医疗补助金是几个月？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "陕西省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "陕西省实施工伤保险条例办法.md",
+          "text": "职工月平均工资为基数，分别支付24个月、21个月的一次性工伤医疗补助金和24个月、21个月的一次性伤残就业补助"
+        }
+      ],
+      "reference_answer": "五级24个月、六级21个月（医疗补助金与就业补助金同标准）。"
+    },
+    {
+      "id": "N172",
+      "category": "single_point",
+      "answerable": true,
+      "query": "上海职工因工死亡，丧葬补助金按几个月算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市工伤保险实施办法.md",
+          "text": "丧葬补助金为从业人员因工死亡时6个月的上年度全市职工月平均工资。"
+        }
+      ],
+      "reference_answer": "丧葬补助金为6个月的上年度全市职工月平均工资。"
+    },
+    {
+      "id": "N173",
+      "category": "single_point",
+      "answerable": true,
+      "query": "天津一个职工在同一个单位多次发生工伤，补助金怎么算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "天津市工伤保险若干规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "天津市工伤保险若干规定.md",
+          "text": "第三十七条  职工在同一用人单位多次发生工伤，应当按照伤残等级分别享受一次性伤残补助金;在解除劳动(聘用)合同"
+        }
+      ],
+      "reference_answer": "一次性伤残补助金分别享受；解除关系时按最高伤残等级享受两项补助金。"
+    },
+    {
+      "id": "N174",
+      "category": "single_point",
+      "answerable": true,
+      "query": "山西的伤残津贴、生活护理费从什么时候开始计发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山西省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山西省实施工伤保险条例办法.md",
+          "text": "第二十六条 伤残津贴、生活护理费和一次性伤残补助金，自作出劳动能力鉴定结论的次月起计发。"
+        }
+      ],
+      "reference_answer": "自作出劳动能力鉴定结论的次月起计发。"
+    },
+    {
+      "id": "N175",
+      "category": "single_point",
+      "answerable": true,
+      "query": "江苏工伤职工自己提出解除劳动关系，距退休不足5年，补助金打几折？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江苏省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江苏省实施工伤保险条例办法.md",
+          "text": "准执行:不足5年的,按照全额的80%支付;不足4年的,按照全额的60%支付;不足3年的,按照全额的40%支付;"
+        }
+      ],
+      "reference_answer": "不足5年的按全额80%支付，不足4年的按全额60%支付。"
+    },
+    {
+      "id": "N176",
+      "category": "single_point",
+      "answerable": true,
+      "query": "浙江职工在同一单位多次发生工伤，两项补助金按哪个等级算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "浙江省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "浙江省工伤保险条例.md",
+          "text": "第二十八条 职工在同一用人单位连续工作期间多次发生工伤，符合规定享受一次性伤残补助金、一次性工伤医疗补助金和一"
+        }
+      ],
+      "reference_answer": "一次性伤残补助金分别计发，医疗补助金和就业补助金按最高伤残等级计发。"
+    },
+    {
+      "id": "N177",
+      "category": "single_point",
+      "answerable": true,
+      "query": "安徽哪些工伤保险待遇是由工伤保险基金支付的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "安徽省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "安徽省实施工伤保险条例办法.md",
+          "text": "第三十条 下列工伤保险待遇由工伤保险基金支付："
+        }
+      ],
+      "reference_answer": "工伤医疗康复费、住院伙食补助、辅助器具费、生活护理费、伤残待遇等由基金支付。"
+    },
+    {
+      "id": "N178",
+      "category": "single_point",
+      "answerable": true,
+      "query": "山东破产企业里一到四级的工伤职工，待遇怎么继续发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山东省贯彻工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山东省贯彻工伤保险条例实施办法.md",
+          "text": "第三十条 破产、关闭、解散和注销企业被鉴定为一级至四级的工伤职工以及因工死亡职工供养亲属享受的工伤保险待遇仍按"
+        }
+      ],
+      "reference_answer": "仍按原标准继续发放，已参保的从工伤保险基金中支付。"
+    },
+    {
+      "id": "N179",
+      "category": "single_point",
+      "answerable": true,
+      "query": "河南用人单位撤销、破产时，工伤待遇费用在清算中怎么处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河南省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河南省工伤保险条例.md",
+          "text": "第三十五条用人单位撤销、破产的，在财产清算时应当按照统筹地区上年度工伤人员人均工伤保险待遇费用优先一次性缴纳十"
+        }
+      ],
+      "reference_answer": "按统筹地区上年度工伤人员人均待遇费用优先一次性缴纳十年费用。"
+    },
+    {
+      "id": "N180",
+      "category": "single_point",
+      "answerable": true,
+      "query": "湖北由工伤保险基金支付的工伤费用包括哪些？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖北省工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖北省工伤保险实施办法.md",
+          "text": "职工因工伤发生的下列费用，按照国家规定从工伤保险基金中支付："
+        }
+      ],
+      "reference_answer": "含工伤医疗康复费、住院伙食补助费、经同意异地就医交通食宿费、辅助器具费等。"
+    },
+    {
+      "id": "N181",
+      "category": "single_point",
+      "answerable": true,
+      "query": "广东五级伤残职工本人提出解除劳动关系，一次性工伤医疗补助金是几个月？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工伤保险条例.md",
+          "text": "医疗补助金。标准为：五级伤残为十个月的本人工资，六级伤残为八个月的本人工资。"
+        }
+      ],
+      "reference_answer": "五级伤残为十个月。"
+    },
+    {
+      "id": "N182",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "同样是五级伤残解除劳动关系，陕西和山东的一次性工伤医疗补助金月数有什么不同？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "陕西省实施工伤保险条例办法.md",
+        "山东省贯彻工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "陕西省实施工伤保险条例办法.md",
+          "text": "职工月平均工资为基数，分别支付24个月、21个月的一次性工伤医疗补助金和24个月、21个月的一次性伤残就业补助"
+        },
+        {
+          "source": "山东省贯彻工伤保险条例实施办法.md",
+          "text": "月平均工资为基数，分别支付本人22个月、18个月的一次性工伤医疗补助金和36个月、30个月的一次性伤残就业补助"
+        }
+      ],
+      "reference_answer": "陕西五级24个月；山东五级22个月。"
+    },
+    {
+      "id": "N183",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "广东和陕西五级伤残的一次性工伤医疗补助金月数分别是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工伤保险条例.md",
+        "陕西省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工伤保险条例.md",
+          "text": "医疗补助金。标准为：五级伤残为十个月的本人工资，六级伤残为八个月的本人工资。"
+        },
+        {
+          "source": "陕西省实施工伤保险条例办法.md",
+          "text": "职工月平均工资为基数，分别支付24个月、21个月的一次性工伤医疗补助金和24个月、21个月的一次性伤残就业补助"
+        }
+      ],
+      "reference_answer": "广东五级10个月，陕西五级24个月。"
+    },
+    {
+      "id": "N184",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "内蒙古和广东对五级、六级伤残的一次性伤残补助金月数规定一致吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "内蒙古自治区工伤保险条例实施办法.md",
+        "广东省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "内蒙古自治区工伤保险条例实施办法.md",
+          "text": "伤残补助金，标准为：五级伤残为18个月的本人工资，六级伤残为16个月的本人工资；"
+        },
+        {
+          "source": "广东省工伤保险条例.md",
+          "text": "险基金支付，标准为：五级伤残为十八个月的本人工资，六级伤残为十六个月的本人工资。"
+        }
+      ],
+      "reference_answer": "一致，均为五级18个月、六级16个月的本人工资。"
+    },
+    {
+      "id": "N185",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "江苏和湖南对距退休不足5年解除劳动关系的补助金递减规则有何不同？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江苏省实施工伤保险条例办法.md",
+        "湖南省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江苏省实施工伤保险条例办法.md",
+          "text": "准执行:不足5年的,按照全额的80%支付;不足4年的,按照全额的60%支付;不足3年的,按照全额的40%支付;"
+        },
+        {
+          "source": "湖南省实施工伤保险条例办法.md",
+          "text": "助金；不足5年的，每少一年减除20%，但最高减除额不得超过全额的90%。"
+        }
+      ],
+      "reference_answer": "江苏按80%、60%比例递减；湖南每少一年减除20%。"
+    },
+    {
+      "id": "N186",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "福建和广西在一次性工伤医疗补助金的计发方式上有什么区别？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "福建省实施工伤保险条例办法.md",
+        "广西壮族自治区实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "福建省实施工伤保险条例办法.md",
+          "text": "统筹地区最后一次公布的人口平均预期寿命与解除或者终止劳动关系时年龄之差以及解除或者终止劳动关系时统筹地区上年度"
+        },
+        {
+          "source": "广西壮族自治区实施工伤保险条例办法.md",
+          "text": "止或者本人提出解除劳动合同的,由工伤保险基金按照下列规定支付一次性工伤医疗补助金,由用人单位按照下列规定支付一"
+        }
+      ],
+      "reference_answer": "福建按预期寿命与年龄之差计算；广西按解除劳动关系时的规定标准支付。"
+    },
+    {
+      "id": "N187",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "四川和重庆对五至十级工伤职工解除劳动关系后的补助金是怎么规定的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "四川省工伤保险条例.md",
+        "重庆市工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "四川省工伤保险条例.md",
+          "text": "一次性伤残就业补助金由用人单位全额支付；距法定退休年龄不足五年的，一次性伤残就业补助金按照年龄每增加一周岁递减"
+        },
+        {
+          "source": "重庆市工伤保险实施办法.md",
+          "text": "五至十级工伤职工本人提出与用人单位解除劳动关系或者用人单位依法解除劳动关系的，或七级至十级工伤职工劳动合同期满"
+        }
+      ],
+      "reference_answer": "四川按是否距退休5年以上确定就业补助金支付；重庆自终止劳动关系之日起终止工伤保险关系。"
+    },
+    {
+      "id": "N188",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "贵州和云南的工伤保险基金统筹层次有什么差别？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "贵州省工伤保险条例.md",
+        "云南省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "贵州省工伤保险条例.md",
+          "text": "第五条 工伤保险基金实行省级统筹，具体办法由省人民政府制定。"
+        },
+        {
+          "source": "云南省实施工伤保险条例办法.md",
+          "text": "第五条 全省工伤保险基金实行州（市）级统筹管理，各统筹地区应当建立工伤保险储备金，逐步实现工伤保险基金省级统筹"
+        }
+      ],
+      "reference_answer": "贵州实行省级统筹；云南实行州（市）级统筹并逐步实现省级统筹。"
+    },
+    {
+      "id": "N189",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "河北和黑龙江在工伤保险费征缴和认定管辖上分别是怎样规定的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河北省社会保险费征缴暂行办法.md",
+        "黑龙江省贯彻工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河北省社会保险费征缴暂行办法.md",
+          "text": "第三条 县级以上人力资源社会保障行政部门负责本行政区域内社会保险费的征缴管理和监督检查工作。人力资源社会保障行"
+        },
+        {
+          "source": "黑龙江省贯彻工伤保险条例实施办法.md",
+          "text": "第四条  用人单位参加工伤保险，职工受到事故伤害或患职业病，应当向用人单位所在地设区的市级社会保险行政部门提出"
+        }
+      ],
+      "reference_answer": "河北由社保经办机构核定缴费基数；黑龙江向单位所在地设区市社保部门申请认定。"
+    },
+    {
+      "id": "N190",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "辽宁和吉林对用人单位参保地、本人工资计算分别是如何规定的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "辽宁省工伤保险实施办法.md",
+        "吉林省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "辽宁省工伤保险实施办法.md",
+          "text": "（二）登记注册地与生产经营地不在同一地区的，原则上在登记注册地参加工伤保险；未在登记注册地参加工伤保险的，在生"
+        },
+        {
+          "source": "吉林省实施工伤保险条例办法.md",
+          "text": "本办法中计算工伤保险待遇的本人工资，是指工伤职工受到事故伤害（或诊断为职业病）或者解除劳动（人事）关系前12个"
+        }
+      ],
+      "reference_answer": "辽宁未在注册地参保的在生产经营地参保；吉林按前12个月平均缴费工资计算本人工资。"
+    },
+    {
+      "id": "N191",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "江西和海南对退休后确诊职业病、参保范围分别是怎么规定的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江西省实施工伤保险条例办法.md",
+        "海南经济特区工伤保险若干规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江西省实施工伤保险条例办法.md",
+          "text": "第二十七条 工伤职工办理退休手续后被确诊患有职业病并认定为工伤的，依法享受工伤保险有关待遇，但不享受一次性伤残"
+        },
+        {
+          "source": "海南经济特区工伤保险若干规定.md",
+          "text": "第二条 本经济特区下列用人单位应当按照本规定参加工伤保险，为本单位全部从业人员缴纳工伤保险费："
+        }
+      ],
+      "reference_answer": "江西退休后确诊职业病可享待遇但无两项一次性补助金；海南规定各类用人单位均应参保。"
+    },
+    {
+      "id": "N192",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "北京和天津对一次性伤残就业补助金及单位自付费用是怎么分工的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "北京市实施工伤保险条例若干规定.md",
+        "天津市工伤保险若干规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "北京市实施工伤保险条例若干规定.md",
+          "text": "《条例》的规定向该工伤职工支付一次性伤残就业补助金。"
+        },
+        {
+          "source": "天津市工伤保险若干规定.md",
+          "text": "第二十五条  因工伤发生的下列费用，由用人单位支付："
+        }
+      ],
+      "reference_answer": "北京由用人单位支付一次性伤残就业补助金；天津明确停工留薪期工资等由单位支付。"
+    },
+    {
+      "id": "N193",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "安徽和浙江对七至十级工伤职工解除劳动关系后的补助金支付有什么规定？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "安徽省实施工伤保险条例办法.md",
+        "浙江省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "安徽省实施工伤保险条例办法.md",
+          "text": "同的，由工伤保险基金支付一次性工伤医疗补助金，由用人单位支付一次性伤残就业补助金。以统筹地区上年度职工月平均工"
+        },
+        {
+          "source": "浙江省工伤保险条例.md",
+          "text": "五级至十级工伤职工，解除或者终止劳动关系的，其一次性工伤医疗补助金和一次性伤残就业补助金，均以解除或者终止劳动"
+        }
+      ],
+      "reference_answer": "安徽由基金支付医疗补助金、单位支付就业补助金；浙江解除关系时一并支付两项补助金。"
+    },
+    {
+      "id": "N194",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "河南和山东五至十级工伤职工的一次性工伤医疗补助金计算口径差异在哪？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "河南省工伤保险条例.md",
+        "山东省贯彻工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "河南省工伤保险条例.md",
+          "text": "第二十七条五级至十级工伤职工按国务院《工伤保险条例》第三十四条、第三十五条规定与用人单位解除或者终止劳动关系的"
+        },
+        {
+          "source": "山东省贯彻工伤保险条例实施办法.md",
+          "text": "月平均工资为基数，分别支付本人22个月、18个月的一次性工伤医疗补助金和36个月、30个月的一次性伤残就业补助"
+        }
+      ],
+      "reference_answer": "河南以统筹地区上年度职工月平均工资为基数；山东按固定月数（五级22个月）。"
+    },
+    {
+      "id": "N195",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "上海和广东对视同工伤情形、停工留薪期上限分别是怎样规定的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市工伤保险实施办法.md",
+        "广东省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市工伤保险实施办法.md",
+          "text": "和工作岗位，突发疾病死亡或者在48小时之内经抢救无效死亡的；"
+        },
+        {
+          "source": "广东省工伤保险条例.md",
+          "text": "能力鉴定委员会确认，最长不超过二十四个月。"
+        }
+      ],
+      "reference_answer": "上海明确48小时内抢救无效死亡视同工伤；广东停工留薪期最长不超过24个月。"
+    },
+    {
+      "id": "N196",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "山东省五级伤残职工的一次性工伤医疗补助金是24个月还是22个月？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "山东省贯彻工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "山东省贯彻工伤保险条例实施办法.md",
+          "text": "月平均工资为基数，分别支付本人22个月、18个月的一次性工伤医疗补助金和36个月、30个月的一次性伤残就业补助"
+        }
+      ],
+      "reference_answer": "22个月（六级为18个月）。"
+    },
+    {
+      "id": "N197",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "陕西省五级伤残的一次性工伤医疗补助金到底是24个月还是22个月？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "陕西省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "陕西省实施工伤保险条例办法.md",
+          "text": "职工月平均工资为基数，分别支付24个月、21个月的一次性工伤医疗补助金和24个月、21个月的一次性伤残就业补助"
+        }
+      ],
+      "reference_answer": "24个月（六级为21个月）。"
+    },
+    {
+      "id": "N198",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "广东省五级伤残的一次性工伤医疗补助金是24个月吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广东省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广东省工伤保险条例.md",
+          "text": "医疗补助金。标准为：五级伤残为十个月的本人工资，六级伤残为八个月的本人工资。"
+        }
+      ],
+      "reference_answer": "不是，五级伤残为十个月。"
+    },
+    {
+      "id": "N199",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "湖南省工伤职工距退休不足5年解除劳动关系，补助金是每少一年减10%还是20%？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "湖南省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "湖南省实施工伤保险条例办法.md",
+          "text": "助金；不足5年的，每少一年减除20%，但最高减除额不得超过全额的90%。"
+        }
+      ],
+      "reference_answer": "每少一年减除20%。"
+    },
+    {
+      "id": "N200",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "内蒙古五级至十级工伤职工距退休不足五年，一次性伤残就业补助金是每差一年扣减20%吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "内蒙古自治区工伤保险条例实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "内蒙古自治区工伤保险条例实施办法.md",
+          "text": "次性伤残就业补助金每差一年扣减10%；不足一年的按照一年计算。工伤职工达到法定退休年龄的，不享受一次性医疗补助"
+        }
+      ],
+      "reference_answer": "不是，每差一年扣减10%，不足一年按一年计算。"
+    },
+    {
+      "id": "N201",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "江苏省五级伤残的一次性工伤医疗补助金是按月数算还是按金额算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "江苏省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "江苏省实施工伤保险条例办法.md",
+          "text": "伤医疗补助金的基准标准为:五级20万元,六级16万元,七级12万元,八级8万元,九级5万元,十级3万元。一次性"
+        }
+      ],
+      "reference_answer": "按金额：基准标准五级为20万元。"
+    },
+    {
+      "id": "N202",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "福建省的一次性工伤医疗补助金是按固定月数计算的吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "福建省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "福建省实施工伤保险条例办法.md",
+          "text": "统筹地区最后一次公布的人口平均预期寿命与解除或者终止劳动关系时年龄之差以及解除或者终止劳动关系时统筹地区上年度"
+        }
+      ],
+      "reference_answer": "不是，按统筹地区人口平均预期寿命与解除时年龄之差及上年度职工月平均工资计算。"
+    },
+    {
+      "id": "N203",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "上海市一级伤残的一次性伤残补助金是24个月还是27个月本人工资？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "上海市工伤保险实施办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "上海市工伤保险实施办法.md",
+          "text": "次性伤残补助金。一级伤残的，为27个月的工伤人员本人工资；二级伤残的，为25个月；三级伤残的，为23个月；四级"
+        }
+      ],
+      "reference_answer": "27个月（二级为25个月）。"
+    },
+    {
+      "id": "N204",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "安徽省七至十级工伤职工合同期满终止，一次性伤残就业补助金是由基金支付还是单位支付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "安徽省实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "安徽省实施工伤保险条例办法.md",
+          "text": "同的，由工伤保险基金支付一次性工伤医疗补助金，由用人单位支付一次性伤残就业补助金。以统筹地区上年度职工月平均工"
+        }
+      ],
+      "reference_answer": "由用人单位支付（医疗补助金由基金支付）。"
+    },
+    {
+      "id": "N205",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "广西五级伤残职工解除劳动关系，一次性伤残就业补助金是由工伤保险基金支付吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "广西壮族自治区实施工伤保险条例办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "广西壮族自治区实施工伤保险条例办法.md",
+          "text": "金,由用人单位按照下列规定支付一次性伤残就业补助金,工伤保险关系终止:"
+        }
+      ],
+      "reference_answer": "不是，由用人单位支付；医疗补助金由基金支付。"
+    },
+    {
+      "id": "N206",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "四川省五级伤残职工距退休还有六年，一次性伤残就业补助金是全额还是按比例支付？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "四川省工伤保险条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "四川省工伤保险条例.md",
+          "text": "一次性伤残就业补助金由用人单位全额支付；距法定退休年龄不足五年的，一次性伤残就业补助金按照年龄每增加一周岁递减"
+        }
+      ],
+      "reference_answer": "距退休五年以上（含五年）的，由用人单位全额支付。"
+    },
+    {
+      "id": "N207",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "2026年深圳市的月最低工资标准具体是多少钱？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N208",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "北京市职工住房公积金单位和个人的缴存比例是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N209",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "女职工生育津贴按多少天计发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N210",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "失业保险金最长可以领取多少个月？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N211",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "职工医保门诊费用的报销比例是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N212",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "企业年金的缴费比例上限是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N213",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "2026年广东省高温津贴每月发放标准是多少元？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N214",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "工伤职工领取的伤残津贴需要缴纳个人所得税吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N215",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "男职工的陪产假（护理假）有多少天？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N216",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "灵活就业人员养老保险的缴费比例是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N217",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "职工在年休假期间享受什么工资待遇？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "现有语料未收录该内容，无法回答。"
+    },
+    {
+      "id": "N218",
+      "category": "single_point",
+      "answerable": true,
+      "query": "我们公司把工程转包给一个包工头，他招的人干活时受伤了，工伤保险责任该谁承担？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理工伤保险行政案件若干问题的规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+          "text": "用工单位违反法律、法规规定将承包业务转包给不具备用工主体资格的组织或者自然人"
+        }
+      ],
+      "reference_answer": "用工单位违法转包给不具备用工主体资格的组织或自然人，该组织招用的职工因工伤亡，用工单位为承担工伤保险责任的单位。"
+    },
+    {
+      "id": "N219",
+      "category": "single_point",
+      "answerable": true,
+      "query": "下班先回父母家再回自己家，路上出车祸算不算上下班途中？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理工伤保险行政案件若干问题的规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+          "text": "在合理时间内往返于工作地与住所地、经常居住地、单位宿舍的合理路线的上下班途中"
+        }
+      ],
+      "reference_answer": "在合理时间内往返于工作地与住所地、经常居住地、单位宿舍，以及配偶父母子女居住地的合理路线，均属上下班途中。"
+    },
+    {
+      "id": "N220",
+      "category": "single_point",
+      "answerable": true,
+      "query": "我被第三人撞伤认定工伤了，社保经办机构说我已起诉第三人就不给工伤保险待遇，这合法吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理工伤保险行政案件若干问题的规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+          "text": "社会保险经办机构以职工或者其近亲属已经对第三人提起民事诉讼为由，拒绝支付工伤保险待遇的，人民法院不予支持"
+        }
+      ],
+      "reference_answer": "不合法。除第三人已支付的医疗费用外，经办机构不得以已对第三人起诉为由拒付工伤保险待遇。"
+    },
+    {
+      "id": "N221",
+      "category": "single_point",
+      "answerable": true,
+      "query": "到了退休年龄但没办退休手续，还在原单位干活受伤，算工伤吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+          "text": "达到或超过法定退休年龄，但未办理退休手续或者未依法享受城镇职工基本养老保险待遇"
+        }
+      ],
+      "reference_answer": "达到或超过法定退休年龄但未办退休手续、未享受城镇职工基本养老保险待遇，继续在原单位工作受伤的，用人单位承担工伤保险责任。"
+    },
+    {
+      "id": "N222",
+      "category": "single_point",
+      "answerable": true,
+      "query": "公司组织团建活动我摔伤了，能认定工伤吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+          "text": "职工在参加用人单位组织或者受用人单位指派参加其他单位组织的活动中受到事故伤害的，应当视为工作原因"
+        }
+      ],
+      "reference_answer": "参加单位组织或受指派参加其他单位组织的活动受伤，应视为工作原因，但参加与工作无关的活动除外。"
+    },
+    {
+      "id": "N223",
+      "category": "single_point",
+      "answerable": true,
+      "query": "长期驻外的工作人员，工伤认定按哪儿的标准算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+          "text": "职工因工作原因驻外，有固定的住所、有明确的作息时间"
+        }
+      ],
+      "reference_answer": "因工作原因驻外且有固定住所、明确作息时间的，按驻在地当地正常工作的情形处理。"
+    },
+    {
+      "id": "N224",
+      "category": "single_point",
+      "answerable": true,
+      "query": "在家远程办公时受伤，能不能认定工伤？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（三）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（三）.md",
+          "text": "职工按照单位安排居家办公，有充分证据证明职工居家工作期间确因工作原因受到事故伤害的"
+        }
+      ],
+      "reference_answer": "按单位安排居家办公，有充分证据证明因工作原因受伤的，不应因在家工作而影响认定工伤。"
+    },
+    {
+      "id": "N225",
+      "category": "single_point",
+      "answerable": true,
+      "query": "领导临时派我干个活，那段时间算不算工作时间？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（三）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（三）.md",
+          "text": "完成用人单位临时指派或者特定工作任务的时间"
+        }
+      ],
+      "reference_answer": "工作时间包括法律规定、合同约定、单位规定的工作时间，以及完成临时指派或特定任务的时间和加班时间。"
+    },
+    {
+      "id": "N226",
+      "category": "single_point",
+      "answerable": true,
+      "query": "退休后查出职业病，还能申请工伤认定吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md",
+          "text": "可以自诊断、鉴定为职业病之日起一年内申请工伤认定"
+        }
+      ],
+      "reference_answer": "曾从事接触职业病危害作业、离岗后被诊断职业病的退休人员等，可自诊断之日起一年内申请工伤认定。"
+    },
+    {
+      "id": "N227",
+      "category": "single_point",
+      "answerable": true,
+      "query": "在同一家公司多次工伤，一次性伤残就业补助金按哪个级别算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md",
+          "text": "按照其在同一用人单位发生工伤的最高伤残级别，计发一次性伤残就业补助金和一次性工伤医疗补助金"
+        }
+      ],
+      "reference_answer": "同一用人单位连续工作期间多次工伤的，按最高伤残级别计发一次性伤残就业补助金和一次性工伤医疗补助金。"
+    },
+    {
+      "id": "N228",
+      "category": "single_point",
+      "answerable": true,
+      "query": "外卖骑手跟平台不算劳动关系，那双方要签什么？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于维护新就业形态劳动者劳动保障权益的指导意见.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于维护新就业形态劳动者劳动保障权益的指导意见.md",
+          "text": "指导企业与劳动者订立书面协议，合理确定企业与劳动者的权利义务"
+        }
+      ],
+      "reference_answer": "不完全符合确立劳动关系情形但企业进行劳动管理的，指导企业与劳动者订立书面协议确定权利义务。"
+    },
+    {
+      "id": "N229",
+      "category": "single_point",
+      "answerable": true,
+      "query": "平台骑手的职业伤害保障试点覆盖哪些行业？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于维护新就业形态劳动者劳动保障权益的指导意见.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于维护新就业形态劳动者劳动保障权益的指导意见.md",
+          "text": "以出行、外卖、即时配送、同城货运等行业的平台企业为重点"
+        }
+      ],
+      "reference_answer": "以出行、外卖、即时配送、同城货运等行业的平台企业为重点，组织开展平台灵活就业人员职业伤害保障试点。"
+    },
+    {
+      "id": "N230",
+      "category": "single_point",
+      "answerable": true,
+      "query": "公司能从工资里直接扣钱吗？哪些情况可以代扣？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "用人单位代扣代缴的个人所得税"
+        }
+      ],
+      "reference_answer": "可代扣个人所得税、应由个人负担的社保费、法院判决裁定的抚养费赡养费及法律法规规定的其他费用。"
+    },
+    {
+      "id": "N231",
+      "category": "single_point",
+      "answerable": true,
+      "query": "员工给公司造成损失，每月最多能从工资里扣多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "但每月扣除的部分不得超过劳动者当月工资的20％"
+        }
+      ],
+      "reference_answer": "每月扣除不得超过当月工资的20%，扣除后剩余不得低于当地月最低工资标准。"
+    },
+    {
+      "id": "N232",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工厂停工两个月，工资怎么发？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "若劳动者提供了正常劳动，则支付给劳动者的劳动报酬不得低于当地的最低工资标准"
+        }
+      ],
+      "reference_answer": "一个工资支付周期内按合同标准支付；超过一个周期的，提供正常劳动的不得低于当地最低工资标准。"
+    },
+    {
+      "id": "N233",
+      "category": "single_point",
+      "answerable": true,
+      "query": "没签劳动合同，怎么判断我跟公司有没有劳动关系？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于确立劳动关系有关事项的通知.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于确立劳动关系有关事项的通知.md",
+          "text": "用人单位依法制定的各项劳动规章制度适用于劳动者，劳动者受用人单位的劳动管理"
+        }
+      ],
+      "reference_answer": "同时具备主体资格、受单位劳动管理从事有报酬劳动、劳动为单位业务组成部分三项情形，劳动关系成立。"
+    },
+    {
+      "id": "N234",
+      "category": "single_point",
+      "answerable": true,
+      "query": "认定劳动关系时，工资记录和考勤表该由谁举证？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于确立劳动关系有关事项的通知.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于确立劳动关系有关事项的通知.md",
+          "text": "项的有关凭证由用人单位负举证责任"
+        }
+      ],
+      "reference_answer": "工资支付凭证、招工招聘登记表、考勤记录等凭证由用人单位负举证责任。"
+    },
+    {
+      "id": "N235",
+      "category": "single_point",
+      "answerable": true,
+      "query": "到退休年龄养老保险只缴了12年，还能继续缴吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "实施《中华人民共和国社会保险法》若干规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "实施《中华人民共和国社会保险法》若干规定.md",
+          "text": "可以延长缴费至满十五年"
+        }
+      ],
+      "reference_answer": "达到法定退休年龄累计缴费不足15年的，可以延长缴费至满15年；社保法实施前参保、延缴5年后仍不足的可一次性缴足。"
+    },
+    {
+      "id": "N236",
+      "category": "single_point",
+      "answerable": true,
+      "query": "在无营业执照的黑厂受伤，十级伤残一次性赔偿金是多少倍？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "非法用工单位伤亡人员一次性赔偿办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "非法用工单位伤亡人员一次性赔偿办法.md",
+          "text": "十级伤残的为赔偿基数的1倍"
+        }
+      ],
+      "reference_answer": "非法用工单位一次性赔偿金按伤残等级确定，十级为赔偿基数的1倍，赔偿基数为统筹地区上年度职工年平均工资。"
+    },
+    {
+      "id": "N237",
+      "category": "single_point",
+      "answerable": true,
+      "query": "非法用工导致职工死亡，一次性赔偿金怎么算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "非法用工单位伤亡人员一次性赔偿办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "非法用工单位伤亡人员一次性赔偿办法.md",
+          "text": "按照上一年度全国城镇居民人均可支配收入的20倍支付一次性赔偿金"
+        }
+      ],
+      "reference_answer": "死亡按上一年度全国城镇居民人均可支配收入的20倍支付一次性赔偿金，另按10倍支付丧葬补助等。"
+    },
+    {
+      "id": "N238",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工作3年、实际工作年限不到10年，病假医疗期有多长？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业职工患病或非因工负伤医疗期规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业职工患病或非因工负伤医疗期规定.md",
+          "text": "在本单位工作年限五年以下的为三个月；五年以上的为六个月"
+        }
+      ],
+      "reference_answer": "实际工作年限十年以下的，在本单位工作五年以下的医疗期为三个月，五年以上为六个月。"
+    },
+    {
+      "id": "N239",
+      "category": "single_point",
+      "answerable": true,
+      "query": "算日工资用的月计薪天数是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md",
+          "text": "月计薪天数：（365天-104天）÷12月＝21.75天"
+        }
+      ],
+      "reference_answer": "月计薪天数为21.75天，日工资按月工资收入除以月计薪天数折算。"
+    },
+    {
+      "id": "N240",
+      "category": "single_point",
+      "answerable": true,
+      "query": "现在一年的制度工作日是多少天？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md",
+          "text": "年工作日：365天-104天（休息日）-13天（法定节假日）＝248天"
+        }
+      ],
+      "reference_answer": "年工作日248天，季工作日62天，月工作日20.67天。"
+    },
+    {
+      "id": "N241",
+      "category": "single_point",
+      "answerable": true,
+      "query": "工作满6年能休几天年假？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "职工带薪年休假条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "职工带薪年休假条例.md",
+          "text": "职工累计工作已满1年不满10年的，年休假5天"
+        }
+      ],
+      "reference_answer": "累计工作满1年不满10年的年休假5天；满10年不满20年10天；满20年15天。"
+    },
+    {
+      "id": "N242",
+      "category": "single_point",
+      "answerable": true,
+      "query": "公司没安排休年假，也没给钱，应补多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "职工带薪年休假条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "职工带薪年休假条例.md",
+          "text": "单位应当按照该职工日工资收入的300%支付年休假工资报酬"
+        }
+      ],
+      "reference_answer": "对应休未休的年休假天数，单位应按日工资收入的300%支付年休假工资报酬。"
+    },
+    {
+      "id": "N243",
+      "category": "single_point",
+      "answerable": true,
+      "query": "跳槽到新公司，之前单位的工龄算不算“连续工作满12个月”？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于《企业职工带薪年休假实施办法》有关问题的复函.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于《企业职工带薪年休假实施办法》有关问题的复函.md",
+          "text": "既包括职工在同一用人单位连续工作满12个月以上的情形"
+        }
+      ],
+      "reference_answer": "“连续工作满12个月以上”既包括同一单位连续工作，也包括在不同用人单位连续工作满12个月以上的情形。"
+    },
+    {
+      "id": "N244",
+      "category": "single_point",
+      "answerable": true,
+      "query": "哪些岗位可以申请不定时工作制？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于企业实行不定时工作制和综合计算工时工作制的审批办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于企业实行不定时工作制和综合计算工时工作制的审批办法.md",
+          "text": "企业中的高级管理人员、外勤人员、推销人员、部分值班人员"
+        }
+      ],
+      "reference_answer": "高级管理人员、外勤、推销、部分值班人员，长途运输、出租车司机、装卸人员等因工作无法按标准工时衡量的职工可实行不定时工作制。"
+    },
+    {
+      "id": "N245",
+      "category": "single_point",
+      "answerable": true,
+      "query": "每月加班总时长最多多少小时？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动部关于职工工作时间有关问题的复函.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动部关于职工工作时间有关问题的复函.md",
+          "text": "休息日和法定休假日的加班的总时数不得超过36小时"
+        }
+      ],
+      "reference_answer": "工作日加点、休息日和法定休假日加班的总时数每月不得超过36小时。"
+    },
+    {
+      "id": "N246",
+      "category": "single_point",
+      "answerable": true,
+      "query": "休息日加班安排补休，补多久才算补上？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动部关于职工工作时间有关问题的复函.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动部关于职工工作时间有关问题的复函.md",
+          "text": "补休时间应等同于加班时间"
+        }
+      ],
+      "reference_answer": "休息日加班应首先安排补休，补休时间应等同于加班时间；不能补休的按200%支付工资。"
+    },
+    {
+      "id": "N247",
+      "category": "single_point",
+      "answerable": true,
+      "query": "竞业限制的范围能随便约定到公司的关联企业吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高法发布劳动争议典型案例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高法发布劳动争议典型案例.md",
+          "text": "劳动者负有的竞业限制义务应与其知悉的商业秘密和与知识产权相关的保密事项范围相适应"
+        }
+      ],
+      "reference_answer": "竞业限制义务应与劳动者知悉的商业秘密和与知识产权相关的保密事项范围相适应，不限制人才有序流动。"
+    },
+    {
+      "id": "N248",
+      "category": "single_point",
+      "answerable": true,
+      "query": "员工故意不签书面劳动合同，公司还要付二倍工资吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高法发布劳动争议典型案例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高法发布劳动争议典型案例.md",
+          "text": "劳动者故意不订立书面劳动合同，用人单位不负有支付二倍工资的责任"
+        }
+      ],
+      "reference_answer": "劳动者故意不订立书面劳动合同的，用人单位不负有支付二倍工资的责任。"
+    },
+    {
+      "id": "N249",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "法定节假日加班到底给300%还是补休？把工资支付规定和劳动部复函对照说一下。",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工资支付暂行规定.md",
+        "劳动部关于职工工作时间有关问题的复函.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "按照不低于劳动合同规定的劳动者本人日或小时工资标准的300％支付劳动者工资"
+        },
+        {
+          "source": "劳动部关于职工工作时间有关问题的复函.md",
+          "text": "应另外支付不低于工资的百分之三百的工资报酬"
+        }
+      ],
+      "reference_answer": "法定休假日加班按不低于本人日或小时工资的300%支付，一般不安排补休；休息日加班可先补休。"
+    },
+    {
+      "id": "N250",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "下班路上出事故，工伤认定要同时满足什么？司法解释和条例怎么衔接？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+        "工伤认定中上下班途中如何判定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+          "text": "在合理时间内往返于工作地与住所地、经常居住地、单位宿舍的合理路线的上下班途中"
+        },
+        {
+          "source": "工伤认定中上下班途中如何判定.md",
+          "text": "职工以上下班为目的、在合理时间内往返于工作单位和居住地之间的合理路线"
+        }
+      ],
+      "reference_answer": "须以上下班为目的、在合理时间合理路线上，且受到非本人主要责任的交通事故等伤害才可认定工伤。"
+    },
+    {
+      "id": "N251",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "建筑公司转包给包工头，工人受伤后既没劳动关系又要赔工伤，法律依据是什么？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+        "最高法发布劳动争议典型案例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+          "text": "用工单位违反法律、法规规定将承包业务转包给不具备用工主体资格的组织或者自然人"
+        },
+        {
+          "source": "最高法发布劳动争议典型案例.md",
+          "text": "工伤保险责任的承担并非必须以存在劳动关系作为前提条件"
+        }
+      ],
+      "reference_answer": "违法转包的用工单位为承担工伤保险责任的单位；工伤保险责任不以存在劳动关系为前提，承包人应支付工伤保险待遇。"
+    },
+    {
+      "id": "N252",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "超龄员工工伤，人社部意见和最高法典型案例分别怎么处理？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+        "最高法发布劳动争议典型案例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+          "text": "达到或超过法定退休年龄，但未办理退休手续或者未依法享受城镇职工基本养老保险待遇"
+        },
+        {
+          "source": "最高法发布劳动争议典型案例.md",
+          "text": "工伤保险责任的承担并非必须以存在劳动关系作为前提条件"
+        }
+      ],
+      "reference_answer": "超龄未办退休手续、未享受养老保险待遇仍在原单位工作受伤的，单位承担工伤保险责任，且不以劳动关系为前提。"
+    },
+    {
+      "id": "N253",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "日工资怎么折算？人社部的折算通知和政策问答说法一致吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md",
+        "实行月薪制的劳动者在支付加班工资时其日工资应如何计算.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md",
+          "text": "月计薪天数：（365天-104天）÷12月＝21.75天"
+        },
+        {
+          "source": "实行月薪制的劳动者在支付加班工资时其日工资应如何计算.md",
+          "text": "劳动者日工资按劳动者本人的月工资标准除以月计薪天数进行折算"
+        }
+      ],
+      "reference_answer": "日工资＝月工资收入÷21.75天，两者口径一致。"
+    },
+    {
+      "id": "N254",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "年假没休完的补偿和年假天数，条例和复函分别怎么规定？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "职工带薪年休假条例.md",
+        "关于《企业职工带薪年休假实施办法》有关问题的复函.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "职工带薪年休假条例.md",
+          "text": "单位应当按照该职工日工资收入的300%支付年休假工资报酬"
+        },
+        {
+          "source": "关于《企业职工带薪年休假实施办法》有关问题的复函.md",
+          "text": "既包括职工在同一用人单位连续工作满12个月以上的情形"
+        }
+      ],
+      "reference_answer": "应休未休年假按日工资300%补偿；连续工作满12个月包括跨单位连续工作，累计工作时间按档案、社保记录等确定。"
+    },
+    {
+      "id": "N255",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "平台企业用工，指导意见和三份指引对休息报酬是怎么配套的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于维护新就业形态劳动者劳动保障权益的指导意见.md",
+        "人力资源社会保障部办公厅关于印发新就业形态劳动者休息和劳动报酬权益保障指引等三个文件的通知.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于维护新就业形态劳动者劳动保障权益的指导意见.md",
+          "text": "以出行、外卖、即时配送、同城货运等行业的平台企业为重点"
+        },
+        {
+          "source": "人力资源社会保障部办公厅关于印发新就业形态劳动者休息和劳动报酬权益保障指引等三个文件的通知.md",
+          "text": "企业要制定完善新就业形态劳动者休息办法"
+        }
+      ],
+      "reference_answer": "指导意见要求完善休息制度、开展职业伤害保障试点，指引细化为企业制定休息办法、科学确定工作量和强度。"
+    },
+    {
+      "id": "N256",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "公司扣工资抵损失，工资支付规定和政策问答的口径一样吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工资支付暂行规定.md",
+        "用人单位可否代扣劳动者工资.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "但每月扣除的部分不得超过劳动者当月工资的20％"
+        },
+        {
+          "source": "用人单位可否代扣劳动者工资.md",
+          "text": "用人单位不得克扣劳动者工资"
+        }
+      ],
+      "reference_answer": "原则上不得克扣，仅四类法定情形可代扣；因员工原因造成损失从工资扣除时每月不超过20%且不低于最低工资标准。"
+    },
+    {
+      "id": "N257",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "13天法定节假日改完后，工作日和计薪天数分别怎么算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md",
+        "全国年节及纪念日放假办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md",
+          "text": "年工作日：365天-104天（休息日）-13天（法定节假日）＝248天"
+        },
+        {
+          "source": "全国年节及纪念日放假办法.md",
+          "text": "春节，放假4天(农历除夕、正月初一至初三)"
+        }
+      ],
+      "reference_answer": "法定节假日13天，年工作日248天、月工作日20.67天；月计薪天数仍为21.75天，春节放假4天。"
+    },
+    {
+      "id": "N258",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "综合计算工时下超时工作算不算加班？审批办法和劳动部复函怎么配合？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于企业实行不定时工作制和综合计算工时工作制的审批办法.md",
+        "劳动部关于职工工作时间有关问题的复函.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于企业实行不定时工作制和综合计算工时工作制的审批办法.md",
+          "text": "综合计算工时工作制，即分别以周、月、季、年等为周期，综合计算工作时间"
+        },
+        {
+          "source": "劳动部关于职工工作时间有关问题的复函.md",
+          "text": "休息日和法定休假日的加班的总时数不得超过36小时"
+        }
+      ],
+      "reference_answer": "综合计算周期内总实际工时超过法定标准的部分视为延长工作时间，按劳动法支付加班费，且月均不超36小时。"
+    },
+    {
+      "id": "N259",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "无营业执照单位用工受伤，赔偿办法和人社部意见有什么不同？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "非法用工单位伤亡人员一次性赔偿办法.md",
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "非法用工单位伤亡人员一次性赔偿办法.md",
+          "text": "十级伤残的为赔偿基数的1倍"
+        },
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md",
+          "text": "由该具备用工主体资格的承包单位承担用人单位依法应承担的工伤保险责任"
+        }
+      ],
+      "reference_answer": "非法用工单位按一次性赔偿办法支付赔偿金；具备用工主体资格的承包单位违法转包的，承担工伤保险责任。"
+    },
+    {
+      "id": "N260",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "没签合同的员工怎么证明劳动关系？认定标准和工作凭证怎么用？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "关于确立劳动关系有关事项的通知.md",
+        "最高法发布劳动争议典型案例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "关于确立劳动关系有关事项的通知.md",
+          "text": "用人单位依法制定的各项劳动规章制度适用于劳动者，劳动者受用人单位的劳动管理"
+        },
+        {
+          "source": "最高法发布劳动争议典型案例.md",
+          "text": "关联企业混同用工，人民法院可根据劳动者主张并结合案情认定劳动关系"
+        }
+      ],
+      "reference_answer": "按三要素认定劳动关系，工资记录、工作证、考勤等可作凭证；关联企业混同用工的可按劳动者主张认定。"
+    },
+    {
+      "id": "N261",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "工伤认定申请超期了还能补救吗？人社部两份执行意见分别怎么规定？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md",
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见.md",
+          "text": "发现劳动关系存在争议且无法确认的，应告知当事人可以向劳动人事争议仲裁委员会申请仲裁"
+        },
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+          "text": "被延误的时间不计算在工伤认定申请时限内"
+        }
+      ],
+      "reference_answer": "因不可抗力、人身自由受限、用人单位原因、登记制度不完善、就劳动关系申请仲裁或诉讼等耽误的时间，不计入工伤认定申请期限。"
+    },
+    {
+      "id": "N262",
+      "category": "cross_document",
+      "answerable": true,
+      "query": "老板拖欠工资还跑路，除了仲裁还能追究刑事责任吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释.md",
+        "工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释.md",
+          "text": "经政府有关部门责令支付仍不支付"
+        },
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "用人单位不得克扣劳动者工资"
+        }
+      ],
+      "reference_answer": "以转移财产、逃匿等方法逃避支付，数额较大且经政府有关部门责令支付仍不支付的，可构成拒不支付劳动报酬罪。"
+    },
+    {
+      "id": "N263",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "《工伤保险条例》里有写转包给个人的工伤责任主体吗？具体条文在哪？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理工伤保险行政案件若干问题的规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+          "text": "用工单位违反法律、法规规定将承包业务转包给不具备用工主体资格的组织或者自然人"
+        }
+      ],
+      "reference_answer": "该规则出自最高法工伤保险行政案件司法解释第三条，而非《工伤保险条例》条文本身；转包时用工单位为责任单位。"
+    },
+    {
+      "id": "N264",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "上下班途中“合理时间、合理路线”的细化列举是条例原文还是司法解释？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "最高人民法院关于审理工伤保险行政案件若干问题的规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "最高人民法院关于审理工伤保险行政案件若干问题的规定.md",
+          "text": "在合理时间内往返于工作地与住所地、经常居住地、单位宿舍的合理路线的上下班途中"
+        }
+      ],
+      "reference_answer": "合理时间、合理路线的四项列举出自最高法工伤保险行政案件司法解释第六条，条例仅作原则规定。"
+    },
+    {
+      "id": "N265",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "“新发生的费用”到底指什么？是条例第六十二条自己解释的吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+          "text": "是指用人单位参加工伤保险前发生工伤的职工，在参加工伤保险后新发生的费用"
+        }
+      ],
+      "reference_answer": "该界定出自人社部执行工伤保险条例意见（二）第三条，指参保前发生工伤的职工在参保后新发生的费用。"
+    },
+    {
+      "id": "N266",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "到了退休年龄还在原单位工作受伤算工伤，这条是《工伤保险条例》第几条？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于执行《工伤保险条例》若干问题的意见（二）.md",
+          "text": "达到或超过法定退休年龄，但未办理退休手续或者未依法享受城镇职工基本养老保险待遇"
+        }
+      ],
+      "reference_answer": "该规则出自人社部执行《工伤保险条例》意见（二）第二条，条例本身未直接规定。"
+    },
+    {
+      "id": "N267",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "月计薪天数21.75天是《工资支付暂行规定》规定的吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "人力资源社会保障部关于职工全年月平均工作时间和工资折算问题的通知.md",
+          "text": "月计薪天数：（365天-104天）÷12月＝21.75天"
+        }
+      ],
+      "reference_answer": "21.75天出自人社部2025年折算通知（原劳社部发〔2008〕3号），《工资支付暂行规定》未规定该天数。"
+    },
+    {
+      "id": "N268",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "年假没休要给300%，这个数是条例写的还是复函写的？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "职工带薪年休假条例.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "职工带薪年休假条例.md",
+          "text": "单位应当按照该职工日工资收入的300%支付年休假工资报酬"
+        }
+      ],
+      "reference_answer": "300%补偿出自《职工带薪年休假条例》第五条；年休假复函只解释连续工作时间和累计工作时间。"
+    },
+    {
+      "id": "N269",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "非法用工十级伤残赔1倍，这个标准在《工伤保险条例》里吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "非法用工单位伤亡人员一次性赔偿办法.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "非法用工单位伤亡人员一次性赔偿办法.md",
+          "text": "十级伤残的为赔偿基数的1倍"
+        }
+      ],
+      "reference_answer": "该标准出自《非法用工单位伤亡人员一次性赔偿办法》第五条，按赔偿基数倍数计算，非条例的伤残补助金标准。"
+    },
+    {
+      "id": "N270",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "病假医疗期3个月是怎么定的？是《劳动合同法》规定的吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "企业职工患病或非因工负伤医疗期规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "企业职工患病或非因工负伤医疗期规定.md",
+          "text": "在本单位工作年限五年以下的为三个月；五年以上的为六个月"
+        }
+      ],
+      "reference_answer": "医疗期长短出自《企业职工患病或非因工负伤医疗期规定》第三条，按实际工作年限和本单位工作年限确定。"
+    },
+    {
+      "id": "N271",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "每月加班不超过36小时，是《工资支付暂行规定》第十三条写的吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "劳动部关于职工工作时间有关问题的复函.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "劳动部关于职工工作时间有关问题的复函.md",
+          "text": "休息日和法定休假日的加班的总时数不得超过36小时"
+        }
+      ],
+      "reference_answer": "36小时上限出自劳动部《关于职工工作时间有关问题的复函》第三条，工资支付暂行规定只规定加班工资标准。"
+    },
+    {
+      "id": "N272",
+      "category": "hard_negative",
+      "answerable": true,
+      "query": "员工造成损失每月最多扣20%，这是劳动法第几条？",
+      "expected_chunk_ids": [],
+      "expected_sources": [
+        "工资支付暂行规定.md"
+      ],
+      "key_snippets": [
+        {
+          "source": "工资支付暂行规定.md",
+          "text": "但每月扣除的部分不得超过劳动者当月工资的20％"
+        }
+      ],
+      "reference_answer": "20%的限制出自《工资支付暂行规定》第十六条，劳动法本身未规定该比例。"
+    },
+    {
+      "id": "N273",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "美国加州对员工竞业限制的补偿金标准是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库仅收录中国劳动法律法规与政策文件，无法回答美国加州法律问题。"
+    },
+    {
+      "id": "N274",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "2026年深圳市最低工资标准具体是多少钱一个月？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库未收录深圳市2026年最低工资标准的具体数额。"
+    },
+    {
+      "id": "N275",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "我们公司能不能规定入职满两年才有年假？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库为法规原文，不含具体企业的内部规章制度，无法回答贵司制度问题。"
+    },
+    {
+      "id": "N276",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "员工申请仲裁主张加班费，一般胜诉率有多高？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库不含裁判统计或胜诉率数据，无法给出概率性结论。"
+    },
+    {
+      "id": "N277",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "日本过劳死认定的具体工时门槛是多少小时？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库仅含中国法域材料，无法回答日本过劳死认定标准。"
+    },
+    {
+      "id": "N278",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "能不能帮我写一段Python脚本统计考勤表里的加班时长？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该请求属于编程任务，与知识库中的劳动法律文本无关。"
+    },
+    {
+      "id": "N279",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "上海2025年社保缴费基数的上限和下限分别是多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库未收录上海市2025年社保缴费基数上下限的具体数值。"
+    },
+    {
+      "id": "N280",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "如果我被公司违法辞退，请直接告诉我该找哪位律师、大概能赔多少钱？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "无法提供律师推荐和个案赔偿金额预测，知识库仅含规范性文件原文。"
+    },
+    {
+      "id": "N281",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "香港《雇佣条例》规定的法定年假天数和内地一样吗？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库未收录香港《雇佣条例》，无法比较两地年假天数。"
+    },
+    {
+      "id": "N282",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "欧盟GDPR对员工考勤数据保存期限有什么要求？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库为中国劳动法材料，不含欧盟GDPR相关内容。"
+    },
+    {
+      "id": "N283",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "我想在北京买首套房，公积金贷款额度怎么算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题涉及个人住房贷款政策，知识库仅含住房公积金管理条例等制度性文本，无法给出额度计算。"
+    },
+    {
+      "id": "N284",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "公司准备上市，股权激励行权时个人所得税怎么计算？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "知识库不含股权激励与个人所得税计算规则。"
+    },
+    {
+      "id": "N285",
+      "category": "unanswerable",
+      "answerable": false,
+      "query": "这个RAG系统的召回率和延迟大概能到多少？",
+      "expected_chunk_ids": [],
+      "expected_sources": [],
+      "key_snippets": [],
+      "reference_answer": "该问题涉及系统评测指标，知识库中无相关数据。"
     }
   ]
 }

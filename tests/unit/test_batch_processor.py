@@ -336,8 +336,8 @@ def test_process_rejects_empty_chunks():
         processor.process([])
 
 
-def test_process_continues_on_batch_failure():
-    """Test process() continues processing after a batch fails."""
+def test_process_raises_on_batch_failure():
+    """Test process() raises with batch context instead of skipping the batch."""
     # Create encoder that fails on second call
     dense = FakeDenseEncoder()
     sparse = FakeSparseEncoder()
@@ -361,15 +361,13 @@ def test_process_continues_on_batch_failure():
     )
     
     chunks = [Chunk(id=f"{i}", text="", metadata={"source_path": "test.pdf"}) for i in range(6)]
-    result = processor.process(chunks)
     
-    # Should process batches 1 and 3 successfully, batch 2 fails
-    assert result.successful_chunks == 4  # 2 from batch 1, 2 from batch 3
-    assert result.failed_chunks == 2  # batch 2
+    with pytest.raises(RuntimeError, match="Encoding failed for batch 1"):
+        processor.process(chunks)
 
 
 def test_process_records_batch_errors_to_trace():
-    """Test batch errors are recorded to TraceContext."""
+    """Test batch errors are recorded to TraceContext before raising."""
     dense = FakeDenseEncoder(should_fail=True)
     sparse = FakeSparseEncoder()
     
@@ -381,10 +379,11 @@ def test_process_records_batch_errors_to_trace():
     
     chunks = [Chunk(id=f"{i}", text="", metadata={"source_path": "test.pdf"}) for i in range(3)]
     trace = TraceContext()
-    result = processor.process(chunks, trace=trace)
+    
+    with pytest.raises(RuntimeError, match="Dense encoder failed"):
+        processor.process(chunks, trace=trace)
     
     # Verify errors were recorded
-    assert result.failed_chunks == 3
     batch_0_error = trace.get_stage_data("batch_0_error")
     assert batch_0_error is not None
     assert "Dense encoder failed" in batch_0_error["error"]

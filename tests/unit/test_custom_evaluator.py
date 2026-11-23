@@ -148,6 +148,35 @@ class TestCustomEvaluatorBoundary:
         metrics = evaluator.evaluate("q", retrieved, ground_truth=["gt1", "gt2"])
         assert metrics["mrr"] == 0.5  # gt1 at position 2 → 1/2
 
+    def test_source_matching_uses_expected_filename_suffix(self) -> None:
+        evaluator = CustomEvaluator(metrics=["hit_rate", "mrr"])
+        retrieved = [
+            {"metadata": {"source_path": r"D:\kb\legal\劳动合同法.md"}},
+            {"metadata": {"source_path": r"D:\kb\legal\竞业限制指引.md"}},
+        ]
+
+        metrics = evaluator.evaluate(
+            "q",
+            retrieved,
+            ground_truth={"sources": ["竞业限制指引.md"]},
+        )
+
+        assert metrics == {"hit_rate": 1.0, "mrr": 0.5}
+
+    def test_source_matching_does_not_match_filename_substring(self) -> None:
+        evaluator = CustomEvaluator(metrics=["hit_rate", "mrr"])
+        retrieved = [
+            {"metadata": {"source_path": r"D:\kb\legal\竞业限制指引.md.backup"}}
+        ]
+
+        metrics = evaluator.evaluate(
+            "q",
+            retrieved,
+            ground_truth={"sources": ["竞业限制指引.md"]},
+        )
+
+        assert metrics == {"hit_rate": 0.0, "mrr": 0.0}
+
     def test_none_evaluator_returns_empty_dict(self) -> None:
         """NoneEvaluator should return empty metrics dict."""
         evaluator = NoneEvaluator()

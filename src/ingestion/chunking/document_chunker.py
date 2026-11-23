@@ -10,7 +10,8 @@ Core Value-Add (vs libs.splitter):
 2. Metadata Inheritance: Propagates Document metadata to all chunks
 3. chunk_index: Records sequential position within document
 4. source_ref: Establishes parent-child traceability
-5. Type Conversion: str → Chunk object (core.types contract)
+5. Legal structure: Preserves article boundaries and adds retrieval context
+6. Type Conversion: str → Chunk object (core.types contract)
 
 Design Principles:
 - Adapter Pattern: Bridges text splitter tool with business objects
@@ -22,9 +23,15 @@ Design Principles:
 from __future__ import annotations
 
 import hashlib
+from pathlib import Path
 from typing import TYPE_CHECKING, List
 
 from src.core.types import Chunk, Document
+from src.ingestion.chunking.legal_structure_splitter import (
+    LegalTextChunk,
+    LegalStructureSplitter,
+    parse_front_matter,
+)
 from src.libs.splitter.splitter_factory import SplitterFactory
 
 if TYPE_CHECKING:
@@ -71,15 +78,24 @@ class DocumentChunker:
         """
         self._settings = settings
         self._splitter = SplitterFactory.create(settings)
+        ingestion_settings = getattr(settings, "ingestion", None)
+        chunk_size = getattr(ingestion_settings, "chunk_size", 500)
+        if not isinstance(chunk_size, int):
+            chunk_size = 500
+        self._legal_splitter = LegalStructureSplitter(
+            chunk_size=chunk_size,
+            overlap=50,
+        )
     
     def split_document(self, document: Document) -> List[Chunk]:
         """Split a Document into Chunks with full business enrichment.
         
         This is the main entry point that orchestrates the transformation:
-        1. Uses underlying splitter to get text fragments
-        2. Generates deterministic IDs for each chunk
-        3. Inherits and extends metadata from document
-        4. Creates Chunk objects conforming to core.types contract
+        1. Removes supported front matter and prefers article-aware splitting
+        2. Uses the configured splitter for non-legal documents and prefaces
+        3. Generates deterministic IDs for each chunk
+        4. Inherits and extends metadata from document
+        5. Creates Chunk objects conforming to core.types contract
         
         Args:
             document: Source document to split into chunks
@@ -112,21 +128,66 @@ class DocumentChunker:
         """
         if not document.text or not document.text.strip():
             raise ValueError(f"Document {document.id} has no text content to split")
-        
-        # Step 1: Use underlying splitter to get text fragments
-        text_fragments = self._splitter.split_text(document.text)
-        
-        if not text_fragments:
+
+        body_text, front_matter = parse_front_matter(document.text)
+        document_metadata = {**document.metadata, **front_matter}
+        working_document = Document(
+            id=document.id,
+            text=body_text,
+            metadata=document_metadata,
+        )
+        if not body_text.strip():
+            raise ValueError(f"Document {document.id} has no body after front matter")
+
+        legal_chunks = self._legal_splitter.split(body_text, self._splitter)
+        if legal_chunks is None:
+            legal_chunks = [
+                LegalTextChunk(text=fragment)
+                for fragment in self._splitter.split_text(body_text)
+            ]
+
+        if not legal_chunks:
             raise ValueError(
                 f"Splitter returned no chunks for document {document.id}. "
-                f"Text length: {len(document.text)}"
+                f"Text length: {len(body_text)}"
             )
         
-        # Step 2: Transform text fragments into Chunk objects with enrichment
         chunks: List[Chunk] = []
-        for index, text in enumerate(text_fragments):
+        document_title = str(
+            document_metadata.get("title")
+            or document_metadata.get("document_title")
+            or ""
+        ).strip()
+        if not document_title:
+            document_title = Path(str(document_metadata.get("source_path", ""))).stem
+
+        for index, legal_chunk in enumerate(legal_chunks):
+            text = legal_chunk.text.strip()
             chunk_id = self._generate_chunk_id(document.id, index, text)
-            chunk_metadata = self._inherit_metadata(document, index, text)
+            chunk_metadata = self._inherit_metadata(working_document, index, text)
+            context_parts = []
+            if document_title:
+                context_parts.append(
+                    document_title
+                    if document_title.startswith("《") and document_title.endswith("》")
+                    else f"《{document_title}》"
+                )
+            if legal_chunk.chapter:
+                context_parts.append(legal_chunk.chapter)
+            if legal_chunk.article_no:
+                context_parts.append(legal_chunk.article_no)
+
+            if context_parts:
+                chunk_metadata["context_header"] = " ".join(context_parts)
+            if legal_chunk.chapter:
+                chunk_metadata["chapter"] = legal_chunk.chapter
+            if legal_chunk.article_no:
+                chunk_metadata["article_no"] = legal_chunk.article_no
+                chunk_metadata["article_text"] = text
+                chunk_metadata["section"] = " ".join(
+                    part for part in (legal_chunk.chapter, legal_chunk.article_no) if part
+                )
+                chunk_metadata.setdefault("section_title", legal_chunk.article_no)
             
             chunk = Chunk(
                 id=chunk_id,
@@ -136,7 +197,7 @@ class DocumentChunker:
             chunks.append(chunk)
         
         return chunks
-    
+
     def _generate_chunk_id(self, doc_id: str, index: int, text: str) -> str:
         """Generate unique and deterministic chunk ID.
         

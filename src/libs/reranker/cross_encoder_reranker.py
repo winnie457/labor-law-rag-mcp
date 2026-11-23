@@ -8,6 +8,8 @@ and API-based endpoints.
 from __future__ import annotations
 
 import logging
+from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from typing import Any, Dict, List, Optional
 
 from src.libs.reranker.base_reranker import BaseReranker
@@ -55,6 +57,11 @@ class CrossEncoderReranker(BaseReranker):
         self.settings = settings
         self.timeout = timeout
         self.kwargs = kwargs
+        self._prediction_executor = ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="cross-encoder"
+        )
+        self._pending_prediction: Optional[Future[Any]] = None
+        self._pending_pairs: Optional[List[tuple[str, str]]] = None
         
         # Initialize or inject model
         if model is not None:
@@ -218,8 +225,30 @@ class CrossEncoderReranker(BaseReranker):
             CrossEncoderRerankError: If scoring fails or times out.
         """
         try:
-            # Use model.predict() to score all pairs in batch
-            scores = self.model.predict(pairs)
+            future = self._pending_prediction
+            if future is not None and self._pending_pairs != pairs:
+                if not future.done():
+                    raise CrossEncoderRerankError(
+                        "A previous Cross-Encoder prediction is still running"
+                    )
+                self._pending_prediction = None
+                self._pending_pairs = None
+                future = None
+            if future is None:
+                future = self._prediction_executor.submit(self.model.predict, pairs)
+                self._pending_prediction = future
+                self._pending_pairs = pairs
+
+            try:
+                scores = future.result(timeout=self.timeout)
+            except FutureTimeoutError as exc:
+                raise CrossEncoderRerankError(
+                    f"Cross-Encoder scoring timed out after {self.timeout:.1f}s"
+                ) from exc
+            finally:
+                if future.done():
+                    self._pending_prediction = None
+                    self._pending_pairs = None
             
             # Convert numpy array to list if needed
             if hasattr(scores, 'tolist'):

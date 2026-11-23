@@ -70,6 +70,20 @@ def test_encode_single_chunk():
     assert results[0]["unique_terms"] == 2
 
 
+def test_encode_indexes_context_header_terms():
+    encoder = SparseEncoder()
+    chunk = Chunk(
+        id="context",
+        text="original body",
+        metadata={"source_path": "laws/labor.md", "context_header": "specialkeyword"},
+    )
+
+    result = encoder.encode([chunk])[0]
+
+    assert result["term_frequencies"]["specialkeyword"] == 1
+    assert chunk.text == "original body"
+
+
 def test_encode_multiple_chunks():
     """Test encoding multiple chunks."""
     encoder = SparseEncoder()

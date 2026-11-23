@@ -14,9 +14,9 @@ from typing import List, Dict, Optional, Any
 from collections import Counter
 import re
 
-import jieba
-
+from src.core.tokenization import tokenize_mixed
 from src.core.types import Chunk
+from src.ingestion.embedding.text_preparation import build_embedding_text
 
 
 class SparseEncoder:
@@ -116,7 +116,7 @@ class SparseEncoder:
                 )
             
             # Tokenize and count terms
-            terms = self._tokenize(chunk.text)
+            terms = self._tokenize(build_embedding_text(chunk))
             term_frequencies = Counter(terms)
             
             # Build statistics dict
@@ -146,8 +146,9 @@ class SparseEncoder:
         """
         tokens: List[str] = []
 
-        # Use jieba to segment the text (handles both Chinese and English)
-        raw_tokens = jieba.lcut(text)
+        # Use the shared tokenizer (handles Chinese + preserves hyphenated
+        # English terms) so index-side terms match QueryProcessor exactly.
+        raw_tokens = tokenize_mixed(text)
 
         # Clean tokens: keep only alphanumeric and Chinese characters
         for token in raw_tokens:

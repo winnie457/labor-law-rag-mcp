@@ -15,11 +15,12 @@ from __future__ import annotations
 import json
 import logging
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.libs.evaluator.base_evaluator import BaseEvaluator
+from src.libs.evaluator.custom_evaluator import CustomEvaluator
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,9 @@ class GoldenTestCase:
     expected_chunk_ids: List[str] = field(default_factory=list)
     expected_sources: List[str] = field(default_factory=list)
     reference_answer: Optional[str] = None
+    answerable: bool = True
+    test_id: str = ""
+    category: str = ""
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> GoldenTestCase:
@@ -47,6 +51,9 @@ class GoldenTestCase:
             expected_chunk_ids=data.get("expected_chunk_ids", []),
             expected_sources=data.get("expected_sources", []),
             reference_answer=data.get("reference_answer"),
+            answerable=bool(data.get("answerable", True)),
+            test_id=str(data.get("id", "")),
+            category=str(data.get("category", "")),
         )
 
 
@@ -64,7 +71,11 @@ class QueryResult:
 
     query: str
     retrieved_chunk_ids: List[str] = field(default_factory=list)
+    retrieved_sources: List[str] = field(default_factory=list)
     generated_answer: Optional[str] = None
+    retrieved_contexts: List[str] = field(default_factory=list)
+    answerable: bool = True
+    error: Optional[str] = None
     metrics: Dict[str, float] = field(default_factory=dict)
     elapsed_ms: float = 0.0
 
@@ -101,7 +112,10 @@ class EvalReport:
                 {
                     "query": qr.query,
                     "retrieved_chunk_ids": qr.retrieved_chunk_ids,
+                    "retrieved_sources": qr.retrieved_sources,
                     "generated_answer": qr.generated_answer,
+                    "answerable": qr.answerable,
+                    "error": qr.error,
                     "metrics": {k: round(v, 4) for k, v in qr.metrics.items()},
                     "elapsed_ms": round(qr.elapsed_ms, 1),
                 }
@@ -167,6 +181,9 @@ class EvalRunner:
         answer_generator: Any = None,
         answer_overrides: Optional[Dict[int, str]] = None,
         reranker: Any = None,
+        rerank_retries: int = 2,
+        rerank_retry_delay_seconds: float = 0.5,
+        generate_answers: bool = True,
     ) -> None:
         """Initialize EvalRunner.
 
@@ -181,6 +198,8 @@ class EvalRunner:
                 to a user-provided answer string. When present, the override
                 answer is used instead of auto-generation for that test case.
             reranker: Optional CoreReranker instance for reranking results.
+            rerank_retries: Retries after reranking errors or fallback results.
+            rerank_retry_delay_seconds: Initial delay between rerank retries.
         """
         self.settings = settings
         self.hybrid_search = hybrid_search
@@ -188,6 +207,9 @@ class EvalRunner:
         self.answer_generator = answer_generator
         self.answer_overrides = answer_overrides or {}
         self.reranker = reranker
+        self.rerank_retries = max(0, rerank_retries)
+        self.rerank_retry_delay_seconds = max(0.0, rerank_retry_delay_seconds)
+        self.generate_answers = generate_answers
 
     def run(
         self,
@@ -238,6 +260,11 @@ class EvalRunner:
                 answer_override=answer_override,
             )
             report.query_results.append(qr)
+            if (idx + 1) % 10 == 0 or (idx + 1) == len(test_cases):
+                print(
+                    f"  ... processed {idx + 1}/{len(test_cases)}",
+                    flush=True,
+                )
 
         report.total_elapsed_ms = (time.monotonic() - t0) * 1000.0
         report.aggregate_metrics = self._aggregate_metrics(report.query_results)
@@ -270,40 +297,85 @@ class EvalRunner:
             QueryResult with metrics for this test case.
         """
         t0 = time.monotonic()
-        qr = QueryResult(query=test_case.query)
+        qr = QueryResult(query=test_case.query, answerable=test_case.answerable)
 
         # Step 1: Retrieve chunks
-        retrieved_chunks = self._retrieve(test_case.query, top_k, collection)
+        try:
+            retrieved_chunks = self._retrieve(test_case.query, top_k, collection)
+        except Exception as exc:
+            qr.error = f"Retrieval failed: {exc}"
+            logger.error("%s for '%s'", qr.error, test_case.query[:40], exc_info=True)
+            qr.elapsed_ms = (time.monotonic() - t0) * 1000.0
+            return qr
         qr.retrieved_chunk_ids = [
             self._get_chunk_id(c) for c in retrieved_chunks
         ]
+        qr.retrieved_sources = [
+            self._get_source(c) for c in retrieved_chunks
+        ]
+        qr.retrieved_contexts = [
+            self._get_text(chunk) for chunk in retrieved_chunks
+        ]
 
-        # Step 2: Generate answer — prefer user override, then generator, then fallback
-        if answer_override:
+        # Step 2: Generate answer — prefer user override, then generator, then fallback.
+        # Skipped entirely in retrieval-only mode; HitRate/MRR do not need an LLM answer.
+        if not self.generate_answers:
+            answer = None
+        elif answer_override:
             answer = answer_override
         else:
             answer = self._generate_answer(test_case.query, retrieved_chunks)
         qr.generated_answer = answer
 
-        # Step 3: Build ground truth
-        ground_truth = (
-            {"ids": test_case.expected_chunk_ids}
-            if test_case.expected_chunk_ids
-            else None
-        )
+        # Step 3: Build ground truth. Chunk ids take precedence; file names
+        # (expected_sources) support source-level matching. Cases with neither
+        # (unanswerable queries) are intentionally left unscored so they do not
+        # pollute hit_rate / MRR averages.
+        ground_truth: Optional[Dict[str, Any]] = None
+        if test_case.answerable and test_case.expected_chunk_ids:
+            ground_truth = {"ids": test_case.expected_chunk_ids}
+        elif test_case.answerable and test_case.expected_sources:
+            ground_truth = {"sources": test_case.expected_sources}
 
         # Step 4: Evaluate
-        try:
-            metrics = self.evaluator.evaluate(  # type: ignore[union-attr]
-                query=test_case.query,
-                retrieved_chunks=retrieved_chunks,
-                generated_answer=answer,
-                ground_truth=ground_truth,
-            )
-            qr.metrics = metrics
-        except Exception as exc:
-            logger.warning("Evaluation failed for '%s': %s", test_case.query[:40], exc)
-            qr.metrics = {}
+        if not test_case.answerable:
+            unanswerable_metrics: Dict[str, float] = {
+                "empty_recall": 1.0 if not retrieved_chunks else 0.0,
+            }
+            # Abstention can only be judged when answer generation actually ran.
+            # A None answer (empty retrieval or LLM failure) means the system did
+            # not assert anything, which counts as abstention, not hallucination.
+            if self.generate_answers:
+                abstained = self._is_abstention(answer)
+                unanswerable_metrics["abstention_rate"] = 1.0 if abstained else 0.0
+                unanswerable_metrics["hallucination_rate"] = 0.0 if abstained else 1.0
+            qr.metrics = unanswerable_metrics
+        elif not retrieved_chunks and isinstance(self.evaluator, CustomEvaluator):
+            qr.metrics = {metric: 0.0 for metric in self.evaluator.metrics}
+        elif ground_truth is None:
+            try:
+                qr.metrics = self.evaluator.evaluate(
+                    query=test_case.query,
+                    retrieved_chunks=retrieved_chunks,
+                    generated_answer=answer,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Evaluation failed for '%s': %s", test_case.query[:40], exc
+                )
+                qr.metrics = {}
+        else:
+            try:
+                metrics = self.evaluator.evaluate(  # type: ignore[union-attr]
+                    query=test_case.query,
+                    retrieved_chunks=retrieved_chunks,
+                    generated_answer=answer,
+                    ground_truth=ground_truth,
+                )
+                qr.metrics = metrics
+            except Exception as exc:
+                logger.warning("Evaluation failed for '%s': %s", test_case.query[:40], exc)
+                qr.metrics = {}
 
         qr.elapsed_ms = (time.monotonic() - t0) * 1000.0
         return qr
@@ -316,32 +388,71 @@ class EvalRunner:
     ) -> List[Any]:
         """Retrieve chunks using HybridSearch + optional Reranking.
 
-        Falls back to an empty list if search is not configured.
+        Raises retrieval errors so a failed search is not misreported as an
+        empty result set.
         """
         if self.hybrid_search is None:
             logger.warning("No HybridSearch configured; returning empty results.")
             return []
 
-        try:
-            # Retrieve more candidates if reranker is enabled
-            has_reranker = self.reranker is not None and getattr(self.reranker, 'is_enabled', False)
-            initial_top_k = top_k * 2 if has_reranker else top_k
+        # Retrieve more candidates if reranker is enabled.
+        has_reranker = (
+            self.reranker is not None
+            and getattr(self.reranker, "is_enabled", False)
+        )
+        initial_top_k = max(top_k * 6, 30) if has_reranker else top_k
 
-            results = self.hybrid_search.search(
-                query=query,
-                top_k=initial_top_k,
-            )
-            results = results if isinstance(results, list) else results.results
+        results = self.hybrid_search.search(query=query, top_k=initial_top_k)
+        results = results if isinstance(results, list) else results.results
 
-            # Apply reranking if enabled
-            if has_reranker and results:
-                rerank_result = self.reranker.rerank(query=query, results=results, top_k=top_k)
-                results = rerank_result.results
+        if has_reranker and results:
+            last_result = None
+            for attempt in range(self.rerank_retries + 1):
+                try:
+                    last_result = self.reranker.rerank(
+                        query=query, results=results, top_k=top_k
+                    )
+                    fallback_reason = getattr(last_result, "fallback_reason", None)
+                    if not getattr(last_result, "used_fallback", False):
+                        return last_result.results
+                    if attempt == self.rerank_retries:
+                        logger.warning(
+                            "Reranking used fallback after %d retries for '%s': %s",
+                            self.rerank_retries,
+                            query[:40],
+                            fallback_reason or "unspecified reranker failure",
+                        )
+                        return last_result.results
+                    logger.warning(
+                        "Reranking fallback on attempt %d/%d for '%s': %s",
+                        attempt + 1,
+                        self.rerank_retries + 1,
+                        query[:40],
+                        fallback_reason or "unspecified reranker failure",
+                    )
+                except Exception as exc:
+                    if attempt == self.rerank_retries:
+                        logger.warning(
+                            "Reranking failed after %d retries for '%s'; "
+                            "using original retrieval order: %s",
+                            self.rerank_retries,
+                            query[:40],
+                            exc,
+                        )
+                        return results[:top_k]
+                    logger.warning(
+                        "Reranking attempt %d/%d failed for '%s': %s",
+                        attempt + 1,
+                        self.rerank_retries + 1,
+                        query[:40],
+                        exc,
+                    )
+                time.sleep(self.rerank_retry_delay_seconds * (2 ** attempt))
 
-            return results
-        except Exception as exc:
-            logger.warning("Retrieval failed for '%s': %s", query[:40], exc)
-            return []
+            if last_result is not None:
+                return last_result.results
+
+        return results
 
     def _generate_answer(self, query: str, chunks: List[Any]) -> str:
         """Generate an answer from retrieved chunks.
@@ -383,6 +494,56 @@ class EvalRunner:
         if hasattr(chunk, "id"):
             return str(getattr(chunk, "id"))
         return str(chunk)
+
+    def _get_source(self, chunk: Any) -> str:
+        """Extract source path from various chunk representations."""
+        if isinstance(chunk, dict):
+            metadata = chunk.get("metadata") if isinstance(chunk.get("metadata"), dict) else {}
+            for container in (chunk, metadata):
+                for key in ("source_path", "source", "file_path"):
+                    if container.get(key):
+                        return str(container[key])
+            return ""
+        metadata = getattr(chunk, "metadata", None)
+        if isinstance(metadata, dict):
+            for key in ("source_path", "source", "file_path"):
+                if metadata.get(key):
+                    return str(metadata[key])
+        source = getattr(chunk, "source_path", None)
+        return str(source) if source else ""
+
+    @staticmethod
+    def _get_text(chunk: Any) -> str:
+        if isinstance(chunk, str):
+            return chunk
+        if isinstance(chunk, dict):
+            return str(
+                chunk.get("text")
+                or chunk.get("content")
+                or chunk.get("page_content")
+                or ""
+            )
+        return str(getattr(chunk, "text", getattr(chunk, "content", "")) or "")
+
+    @staticmethod
+    def _is_abstention(answer: Optional[str]) -> bool:
+        if not answer or not answer.strip():
+            return True
+        normalized = answer.casefold()
+        refusal_phrases = (
+            "无法找到",
+            "无法回答",
+            "无法提供",
+            "无法确认",
+            "没有足够信息",
+            "知识库未",
+            "资料未涉及",
+            "未涉及",
+            "未提供",
+            "不包含",
+            "不在知识库",
+        )
+        return any(phrase in normalized for phrase in refusal_phrases)
 
     @staticmethod
     def _aggregate_metrics(results: List[QueryResult]) -> Dict[str, float]:

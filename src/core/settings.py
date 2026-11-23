@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
+from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
 # Repo root & path resolution
@@ -73,6 +75,18 @@ def _require_number(data: Dict[str, Any], key: str, path: str) -> float:
     return float(value)
 
 
+def _number_or_default(data: Dict[str, Any], key: str, path: str, default: float) -> float:
+    if key not in data:
+        return default
+    return _require_number(data, key, path)
+
+
+def _int_or_default(data: Dict[str, Any], key: str, path: str, default: int) -> int:
+    if key not in data:
+        return default
+    return _require_int(data, key, path)
+
+
 def _require_bool(data: Dict[str, Any], key: str, path: str) -> bool:
     value = _require_value(data, key, path)
     if not isinstance(value, bool):
@@ -121,6 +135,11 @@ class VectorStoreSettings:
     provider: str
     persist_directory: str
     collection_name: str
+    # Chroma writes its HNSW index to disk once sync_threshold is reached.
+    # chromadb 1.5.9 fails to reload those files in this environment, so a
+    # high threshold keeps vectors in the sqlite log and makes collections
+    # queryable from a fresh process. Can be overridden in settings.yaml.
+    hnsw_sync_threshold: int = 1_000_000
 
 
 @dataclass(frozen=True)
@@ -129,6 +148,8 @@ class RetrievalSettings:
     sparse_top_k: int
     fusion_top_k: int
     rrf_k: int
+    dense_weight: float = 2.0
+    sparse_weight: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -255,12 +276,21 @@ class Settings:
                 provider=_require_str(vector_store, "provider", "vector_store"),
                 persist_directory=_require_str(vector_store, "persist_directory", "vector_store"),
                 collection_name=_require_str(vector_store, "collection_name", "vector_store"),
+                hnsw_sync_threshold=_int_or_default(
+                    vector_store, "hnsw_sync_threshold", "vector_store", 1_000_000
+                ),
             ),
             retrieval=RetrievalSettings(
                 dense_top_k=_require_int(retrieval, "dense_top_k", "retrieval"),
                 sparse_top_k=_require_int(retrieval, "sparse_top_k", "retrieval"),
                 fusion_top_k=_require_int(retrieval, "fusion_top_k", "retrieval"),
                 rrf_k=_require_int(retrieval, "rrf_k", "retrieval"),
+                dense_weight=_number_or_default(
+                    retrieval, "dense_weight", "retrieval", 2.0
+                ),
+                sparse_weight=_number_or_default(
+                    retrieval, "sparse_weight", "retrieval", 1.0
+                ),
             ),
             rerank=RerankSettings(
                 enabled=_require_bool(rerank, "enabled", "rerank"),
@@ -305,8 +335,25 @@ def validate_settings(settings: Settings) -> None:
         raise SettingsError("Missing required field: observability.log_level")
 
 
+def _expand_env_vars(value: Any) -> Any:
+    """Recursively expand ``${VAR}`` / ``$VAR`` references from environment variables.
+
+    Unresolved references are left untouched so they can be reported explicitly.
+    """
+    if isinstance(value, str):
+        return os.path.expandvars(value)
+    if isinstance(value, dict):
+        return {key: _expand_env_vars(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_expand_env_vars(item) for item in value]
+    return value
+
+
 def load_settings(path: str | Path | None = None) -> Settings:
     """Load settings from a YAML file and validate required fields.
+
+    Settings may reference secrets as ``${ENV_VAR}``; values are resolved from
+    the process environment, with ``<repo>/.env`` loaded first.
 
     Args:
         path: Path to settings YAML.  Defaults to
@@ -318,9 +365,22 @@ def load_settings(path: str | Path | None = None) -> Settings:
     if not settings_path.exists():
         raise SettingsError(f"Settings file not found: {settings_path}")
 
+    # Secrets are kept out of version control: <repo>/.env is loaded first,
+    # then ${VAR} references inside the YAML are expanded.
+    load_dotenv(REPO_ROOT / ".env", override=False)
+
     with settings_path.open("r", encoding="utf-8") as handle:
         data = yaml.safe_load(handle)
+    data = _expand_env_vars(data or {})
 
-    settings = Settings.from_dict(data or {})
+    for section in ("llm", "embedding", "vision_llm"):
+        api_key = str((data.get(section) or {}).get("api_key") or "")
+        if "${" in api_key:
+            raise SettingsError(
+                f"{section}.api_key references an undefined environment variable: "
+                f"{api_key}. Define it in {REPO_ROOT / '.env'}"
+            )
+
+    settings = Settings.from_dict(data)
     validate_settings(settings)
     return settings

@@ -123,9 +123,20 @@ class ChromaStore(BaseVectorStore):
         
         # Get or create collection
         try:
+            collection_metadata: Dict[str, Any] = {"hnsw:space": "cosine"}
+            # Keep HNSW vectors in the sqlite log instead of flushing a
+            # separate index file. chromadb 1.5.9 cannot reload the flushed
+            # HNSW index in this environment ("Error loading hnsw index"),
+            # which makes collections unqueryable from a fresh process.
+            # For this project's corpus size the replay cost is negligible.
+            sync_threshold = getattr(
+                vector_store_config, "hnsw_sync_threshold", None
+            )
+            if sync_threshold is not None and int(sync_threshold) > 0:
+                collection_metadata["hnsw:sync_threshold"] = int(sync_threshold)
             self.collection = self.client.get_or_create_collection(
                 name=self.collection_name,
-                metadata={"hnsw:space": "cosine"}  # Use cosine similarity
+                metadata=collection_metadata,
             )
         except Exception as e:
             raise RuntimeError(
@@ -333,6 +344,32 @@ class ChromaStore(BaseVectorStore):
                 f"Failed to clear collection '{collection_name or self.collection_name}': {e}"
             ) from e
 
+    def get_ids_by_metadata(self, filter_dict: Dict[str, Any]) -> List[str]:
+        """Return IDs of records matching a metadata filter.
+
+        Args:
+            filter_dict: Metadata key/value pairs to match
+                (e.g. ``{"doc_hash": "abc123"}``).
+
+        Returns:
+            List of matching record IDs (empty when nothing matches).
+
+        Raises:
+            ValueError: If *filter_dict* is empty.
+            RuntimeError: If the operation fails.
+        """
+        if not filter_dict:
+            raise ValueError("filter_dict cannot be empty")
+
+        try:
+            where = self._build_where_clause(filter_dict)
+            results = self.collection.get(where=where, include=[])
+            return list(results.get("ids", []) or [])
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to query IDs by metadata {filter_dict}: {e}"
+            ) from e
+
     def delete_by_metadata(
         self,
         filter_dict: Dict[str, Any],
@@ -356,10 +393,7 @@ class ChromaStore(BaseVectorStore):
             raise ValueError("filter_dict cannot be empty")
 
         try:
-            where = self._build_where_clause(filter_dict)
-            # Query matching IDs first
-            results = self.collection.get(where=where, include=[])
-            matching_ids = results.get("ids", [])
+            matching_ids = self.get_ids_by_metadata(filter_dict)
 
             if not matching_ids:
                 logger.debug(f"delete_by_metadata: no records matched {filter_dict}")

@@ -31,11 +31,14 @@ def _make_fake_pipeline() -> object:
     fp.integrity_checker.compute_sha256.return_value = "hash123"
     fp.integrity_checker.should_skip.return_value = False
 
-    # Stage 2: loader
-    fp.loader = MagicMock()
-    fp.loader.load.return_value = Document(
+    # Stage 2: loaders (PDF for "test.pdf", text for .txt/.md)
+    fp.pdf_loader = MagicMock()
+    fp.pdf_loader.load.return_value = Document(
         id="doc1", text="Hello world. " * 50, metadata={"source_path": "test.pdf", "images": []}
     )
+    fp.text_loader = MagicMock()
+    # run() resolves the loader through self._get_loader(); bind it for the fake
+    fp._get_loader = lambda _path: fp.pdf_loader
 
     # Stage 3: chunker
     chunks = [
